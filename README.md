@@ -7,6 +7,7 @@
 - state strong perfect graph theorem
 - state weak perfect graph theorem
 - define bipartite graphs
+- define heriditary graphs
   
 
 Examples: 
