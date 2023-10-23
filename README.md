@@ -2,7 +2,7 @@
 
 - define perfect graphs
 - define cycles
-- define Complement
+- define Complement (Complements already defined Mathlib.Combinatorics.SimpleGraph.hasCompl
 - define induced subgraphs? 
 - state strong perfect graph theorem
 - state weak perfect graph theorem
