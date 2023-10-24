@@ -7,7 +7,8 @@ Things we already have :
 - IsSubgraph and IsSubraph_eq_le - input two graphs returns a bool if one is a subgraph of the other
 - Sup : union of two graphs
 
-  
+
+
 
 - define perfect graphs
 - define cycles
