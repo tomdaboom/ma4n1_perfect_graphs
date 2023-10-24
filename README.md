@@ -9,7 +9,7 @@ Things we already have :
 
 
 
-
+Things we need to do:
 - define perfect graphs
 - define cycles
 - define Complement (Complements already defined Mathlib.Combinatorics.SimpleGraph.hasCompl
