@@ -19,7 +19,7 @@ namespace PerfectGraphs
 
 def finiteEmpty (n : ℕ) := emptyGraph (Fin n)
 
-#check (finiteEmpty 5).loopless
+#check (finiteEmpty 5).Adj
 
 --def finiteChromaticNumber {V : Type} [Fintype V] (G : SimpleGraph V) : Set ℕ
 --    :=  {n | SimpleGraph.Colorable G n ∧ n ≤ Fintype.card V}
@@ -36,11 +36,17 @@ theorem emptyOneColourable {V : Type} : SimpleGraph.Colorable (emptyGraph V) 1 :
     intros v
     exact Nat.lt_one_iff.mpr rfl
 
+lemma irreflexiveAltDef {V : Type} (rel : V → V → Prop) (irrefl : Irreflexive rel) : ∀ x y : V, rel x y → ¬ x = y := by
+    intros x y x_rel_y
+    sorry
+
+
 def trivialColouring {n : ℕ} (G : SimpleGraph (Fin n)) : SimpleGraph.Coloring G ℕ :=
     SimpleGraph.Coloring.mk (λ v : Fin n => (v : ℕ)) (by
         intros v w v_adj_w; simp only [ne_eq]
-        convert G.loopless
-        sorry
+        have irrefl : Irreflexive G.Adj := G.loopless
+        have neq := irreflexiveAltDef G.Adj irrefl v w v_adj_w
+        exact Fin.vne_of_ne neq
     )
 
 end PerfectGraphs
