@@ -40,12 +40,10 @@ lemma irreflexiveAltDef {V : Type} (rel : V → V → Prop) (irrefl : Irreflexiv
     intros x y x_rel_y
     sorry
 
-
 def trivialColouring {n : ℕ} (G : SimpleGraph (Fin n)) : SimpleGraph.Coloring G ℕ :=
     SimpleGraph.Coloring.mk (λ v : Fin n => (v : ℕ)) (by
         intros v w v_adj_w; simp only [ne_eq]
-        have irrefl : Irreflexive G.Adj := G.loopless
-        have neq := irreflexiveAltDef G.Adj irrefl v w v_adj_w
+        have neq := irreflexiveAltDef G.Adj G.loopless v w v_adj_w
         exact Fin.vne_of_ne neq
     )
 
