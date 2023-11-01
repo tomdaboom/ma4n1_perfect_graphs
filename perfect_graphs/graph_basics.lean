@@ -36,8 +36,9 @@ theorem emptyOneColourable {V : Type} : SimpleGraph.Colorable (emptyGraph V) 1 :
     intros v
     exact Nat.lt_one_iff.mpr rfl
 
-lemma irreflexiveAltDef {V : Type} (rel : V → V → Prop) (irrefl : Irreflexive rel) : ∀ x y : V, rel x y → ¬ x = y := by
-    intros x y x_rel_y
+
+lemma irreflexiveAltDef {V : Type} (rel : V → V → Prop) (irrefl : Irreflexive rel) (x y : V) : rel x y → ¬ x = y := by
+    intros x_rel_y
     sorry
 
 def trivialColouring {n : ℕ} (G : SimpleGraph (Fin n)) : SimpleGraph.Coloring G ℕ :=
