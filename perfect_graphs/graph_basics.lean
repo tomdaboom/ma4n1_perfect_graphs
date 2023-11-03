@@ -19,8 +19,6 @@ namespace PerfectGraphs
 
 def finiteEmpty (n : ℕ) := emptyGraph (Fin n)
 
-#check (finiteEmpty 5).Adj
-
 --def finiteChromaticNumber {V : Type} [Fintype V] (G : SimpleGraph V) : Set ℕ
 --    :=  {n | SimpleGraph.Colorable G n ∧ n ≤ Fintype.card V}
 
@@ -37,8 +35,19 @@ theorem emptyOneColourable {V : Type} : SimpleGraph.Colorable (emptyGraph V) 1 :
     exact Nat.lt_one_iff.mpr rfl
 
 
+lemma chiAtLeastOne {V : Type} (G : SimpleGraph V) : G.chromaticNumber ≥ 1 := by
+    exact?
+
+theorem emptyChiOne {V : Type} : SimpleGraph.chromaticNumber (emptyGraph V) = 1 := by
+    unfold SimpleGraph.chromaticNumber
+    have biggerThanOne := chiAtLeastOne (emptyGraph V)
+    simp only [SimpleGraph.emptyGraph_eq_bot]
+    sorry
+
+
 lemma irreflexiveAltDef {V : Type} (rel : V → V → Prop) (irrefl : Irreflexive rel) (x y : V) : rel x y → ¬ x = y := by
     intros x_rel_y
+    unfold Irreflexive at irrefl
     sorry
 
 def trivialColouring {n : ℕ} (G : SimpleGraph (Fin n)) : SimpleGraph.Coloring G ℕ :=
