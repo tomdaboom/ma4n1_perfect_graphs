@@ -8,10 +8,10 @@ import Mathlib.Data.Fintype.Basic
 
 
 
--- inductive color : Type
--- | red : color
--- | blue : color
--- | green : color
+inductive color : Type
+| red : color
+| blue : color
+| green : color
 
 -- open color
 
@@ -42,17 +42,30 @@ def exampleGraph : SimpleGraph (Fin 5) where
   loopless a b := by
     aesop
 
-def exampleColoringFunction (v : Fin 5) : Prop :=
+def exampleColoringFunction (v : Fin 5) : Bool :=
   v=0 ∨  v=2
 
 
 lemma valid_coloring : ∀ {v w : Fin 5}, exampleGraph.Adj v w → exampleColoringFunction v ≠ exampleColoringFunction w :=
   by
-   sorry
+    intros v w h
+    unfold exampleGraph at h
+    unfold SimpleGraph.Adj at h
+    unfold exampleColoringFunction
+    aesop
 
 
 
 
 
-def exampleGraph.Coloring : (exampleGraph).Coloring bool :=
-  SimpleGraph.Coloring.mk exampleColoringFunction (valid_coloring)
+
+
+
+
+
+
+
+def exampleGraph.Coloring : (exampleGraph).Coloring Bool :=
+  SimpleGraph.Coloring.mk exampleColoringFunction valid_coloring
+
+#check exampleGraph.Coloring
