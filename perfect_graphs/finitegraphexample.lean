@@ -54,18 +54,24 @@ lemma valid_coloring : ∀ {v w : Fin 5}, exampleGraph.Adj v w → exampleColori
     unfold exampleColoringFunction
     aesop
 
-
-
-
-
-
-
-
-
-
+lemma invalid_coloring : ∃ {v w : Fin 5}, exampleGraph.Adj v w → exampleColoringFunction v ≠ exampleColoringFunction w :=
+  by
+    intros v w h
+    unfold exampleGraph at h
+    unfold SimpleGraph.Adj at h
+    unfold exampleColoringFunction
+    aesop
 
 
 def exampleGraph.Coloring : (exampleGraph).Coloring Bool :=
   SimpleGraph.Coloring.mk exampleColoringFunction valid_coloring
 
+
+
 #check exampleGraph.Coloring
+
+def isValidColoring {V : Type} [Fintype V] (G : SimpleGraph V) (coloring : V → color) : Bool :=
+  Fintype.all (λ e : Sym2 V
+    match e with
+    | ⟨v, w, h⟩ => G.Adj v w → (coloring v ≠ coloring w)
+  )
