@@ -11,17 +11,17 @@ def FiniteGraph (n : ℕ) : Type := SimpleGraph (Fin n)
 def validColoring {colors : Type}
   (G : FiniteGraph vs)
   (coloring : Fin vs → colors)
-  [Decidable (G.Adj v u)]
-  [Decidable (coloring v = coloring u)]
+  [∀ u v : Fin vs, Decidable (G.Adj v u)]
+  [Decidable (∀ u v : Fin vs, coloring v = coloring u)]
   : Bool
   := Id.run do
     let mut result := true
 
     for (v : Fin vs) in [0:vs-1] do
-      for (u : Fin vs) in [0:vs-1] do
-        if (G.Adj v u) then
-          if (coloring v = coloring u) then
-            result := false
+--      for (u : Fin vs) in [0:vs-1] do
+        if (G.Adj v v) then
+          --if (coloring v = coloring u) then
+          result := false
 
     pure result
 
