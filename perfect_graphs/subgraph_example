@@ -56,28 +56,43 @@ def G' : SimpleGraph (Fin 5) where
 
 open SimpleGraph
 def G'' : Subgraph G where
- verts := (Fin 5) 
+ verts := {0, 1}
  Adj x y := x = 0 ∧ y = 1 ∨ x = 1 ∧ y = 0 
- adj_sub := by aesop
- edge_vert := by aesop
+ adj_sub := by 
+  intros v w
+  intro f
+  unfold Adj G
+  aesop
+ edge_vert := by 
+  aesop
  symm Symmetric Adj := by aesop_graph
 
-#check (G'' : Subgraph G)
-#check G''.Subgraph.IsInduced G
 
 open SimpleGraph
-theorem subg : G' ≤ G := by
-  unfold G; unfold G';
+theorem subg : G ≤ G := by
+  unfold G; 
   aesop_graph
 
+#check (G'' : Subgraph G)
+#check (G' : Subgraph G)
 
+#check G'.IsSubgraph G
 
-theorem indsub : G.Subgraph.IsInduced G' := by
+theorem ex : G'.IsSubgraph G := by
+  unfold IsSubgraph
+  unfold G G'
+  aesop
+
+#eval G'.IsSubgraph G
+
+#eval G''.IsInduced G
+#check G.IsInduced G'
+
+open SimpleGraph
+theorem ind: IsInduced (G'' : Subgraph G) := by
   unfold G; unfold G';
  
 
-
-#align simple_graph.to_subgraph SimpleGraph.toSubgraph
 
 
 def exampleColoringFunction (v : Fin 5) : Bool :=
