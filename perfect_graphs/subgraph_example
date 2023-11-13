@@ -95,6 +95,11 @@ theorem ind: IsInduced (G'' : Subgraph G) := by
 def PGIsInduced {V : Type} (H : SimpleGraph V) (H' : Subgraph H) : Prop :=
   ∀ {v w : V}, v ∈ H'.verts → w ∈ H'.verts → H.Adj v w → H'.Adj v w
 
+theorem ex2 : PGIsInduced G G''  := by
+ unfold G;
+ unfold G''
+ aesop_graph
+
 
 def exampleColoringFunction (v : Fin 5) : Bool :=
   v=0 ∨  v=2
