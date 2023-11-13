@@ -92,7 +92,8 @@ open SimpleGraph
 theorem ind: IsInduced (G'' : Subgraph G) := by
   unfold G; unfold G';
  
-
+def PGIsInduced {V : Type} (H : SimpleGraph V) (H' : Subgraph H) : Prop :=
+  ∀ {v w : V}, v ∈ H'.verts → w ∈ H'.verts → H.Adj v w → H'.Adj v w
 
 
 def exampleColoringFunction (v : Fin 5) : Bool :=
