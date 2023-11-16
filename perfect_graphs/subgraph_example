@@ -94,3 +94,6 @@ theorem ex2 : PGIsInduced G G'' := by
  unfold G''
  aesop_graph
 
+def hasNclique {V : Type} (G : SimpleGraph V) (n : ℕ) : Prop :=
+  ∃ t, G.IsNClique n t
+
