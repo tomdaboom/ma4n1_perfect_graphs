@@ -97,3 +97,6 @@ theorem ex2 : PGIsInduced G G'' := by
 def hasNclique {V : Type} (G : SimpleGraph V) (n : ℕ) : Prop :=
   ∃ t, G.IsNClique n t
 
+noncomputable def nonCliqueNumber {V : Type} (G : SimpleGraph V) : ℕ :=
+  sSup { n : ℕ | hasNclique G n }
+
