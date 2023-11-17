@@ -94,13 +94,13 @@ theorem ex2 : PGIsInduced G G'' := by
  unfold G''
  aesop_graph
 
-def hasNclique {V : Type} (G : SimpleGraph V) (n : ℕ) : Prop :=
+def hasNClique {V : Type} (G : SimpleGraph V) (n : ℕ) : Prop :=
   ∃ t, G.IsNClique n t
 
-noncomputable def nonCliqueNumber {V : Type} (G : SimpleGraph V) : ℕ :=
-  sSup { n : ℕ | hasNclique G n }
+noncomputable def CliqueNumber {V : Type} (G : SimpleGraph V) : ℕ :=
+  sSup { n : ℕ | hasNClique G n }
 
-theorem CliqueNumber {V : Type} (G : SimpleGraph V) (k : ℕ) (NClique : hasNclique G k) (notNPlusOneClique : ¬ hasNclique G (k+1)) : nonCliqueNumber = k := by
+theorem equivCliqueNumber {V : Type} (G : SimpleGraph V) (k : ℕ) (NClique : hasNClique G k) (notNPlusOneClique : ¬ hasNClique G (k+1)) : CliqueNumber = k := by
   sorry
 
 
