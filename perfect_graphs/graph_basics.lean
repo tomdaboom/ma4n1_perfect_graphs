@@ -32,32 +32,18 @@ theorem chromaticNumberAltDef {V : Type} (G : SimpleGraph V) (k : ℕ) (colorabl
     -/
     sorry
 
-def uniformColouring {V : Type} : SimpleGraph.Coloring (emptyGraph V) ℕ :=
-    SimpleGraph.Coloring.mk (λ _ : V => 0) (by
-        intros v w
-        simp only [SimpleGraph.emptyGraph_eq_bot, SimpleGraph.bot_adj, ne_eq, IsEmpty.forall_iff]
-    )
+lemma notZeroColorable {V : Type} [Nonempty V] [Fintype V] (G : SimpleGraph V) : ¬ G.Colorable 0 := by
+    sorry
 
-theorem emptyOneColorable {V : Type} : SimpleGraph.Colorable (emptyGraph V) 1 := by
-    refine (SimpleGraph.colorable_iff_exists_bdd_nat_coloring 1).mpr ?_
-    exists uniformColouring
-    intros v
-    exact Nat.lt_one_iff.mpr rfl
-
-
---lemma notZeroColorable {G : SimpleGraph V} : ¬ SimpleGraph.Colorable
-
-theorem emptyChiOne {V : Type} : SimpleGraph.chromaticNumber (emptyGraph V) = 1 := by
-    apply chromaticNumberAltDef
-    · exact emptyOneColorable
-    · simp only [SimpleGraph.emptyGraph_eq_bot, le_refl, tsub_eq_zero_of_le]
-      unfold SimpleGraph.Colorable
-      sorry
+theorem emptyChiOne {V : Type} [Nonempty V] [Fintype V] : SimpleGraph.chromaticNumber (emptyGraph V) = 1 := by
+    simp only [SimpleGraph.emptyGraph_eq_bot]
+    exact SimpleGraph.chromaticNumber_bot
 
 lemma irreflexiveAltDef {V : Type} (rel : V → V → Prop) (irrefl : Irreflexive rel) (x y : V) : rel x y → ¬ x = y := by
-    intros x_rel_y
+    intros x_rel_y x_eq_y
     unfold Irreflexive at irrefl
-    sorry
+    rw [x_eq_y] at x_rel_y
+    exact irrefl y x_rel_y
 
 def trivialColouring {n : ℕ} (G : SimpleGraph (Fin n)) : SimpleGraph.Coloring G ℕ :=
     SimpleGraph.Coloring.mk (λ v : Fin n => (v : ℕ)) (by
