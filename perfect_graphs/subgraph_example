@@ -100,3 +100,7 @@ def hasNclique {V : Type} (G : SimpleGraph V) (n : ℕ) : Prop :=
 noncomputable def nonCliqueNumber {V : Type} (G : SimpleGraph V) : ℕ :=
   sSup { n : ℕ | hasNclique G n }
 
+theorem CliqueNumber {V : Type} (G : SimpleGraph V) (k : ℕ) (NClique : hasNclique G k) (notNPlusOneClique : ¬ hasNclique G (k+1)) : nonCliqueNumber = k := by
+  sorry
+
+
