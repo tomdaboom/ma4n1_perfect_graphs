@@ -11,12 +11,12 @@ Things we already have :
 
 Things we need to do:
 - ✔ define perfect graphs
-- define cycles
-- define Complement (Complements already defined Mathlib.Combinatorics.SimpleGraph.hasCompl
+- ✔ define cycles
+- ✔ define Complement (Complements already defined Mathlib.Combinatorics.SimpleGraph.hasCompl
 - ✔ define induced subgraphs? 
 - state strong perfect graph theorem
 - state weak perfect graph theorem
-- define bipartite graphs
+- ✔ define bipartite graphs
 - ✔ (goal has now changed to just showing specific properties are hereditary) define heriditary graphs
 - ✔ (have non-computable version) define clique number
   
