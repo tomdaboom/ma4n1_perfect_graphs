@@ -10,15 +10,15 @@ Things we already have :
 
 
 Things we need to do:
-- define perfect graphs
+- ✔ define perfect graphs
 - define cycles
 - define Complement (Complements already defined Mathlib.Combinatorics.SimpleGraph.hasCompl
-- define induced subgraphs? 
+- ✔ define induced subgraphs? 
 - state strong perfect graph theorem
 - state weak perfect graph theorem
 - define bipartite graphs
-- define heriditary graphs
-- define clique number
+- ✔ (goal has now changed to just showing specific properties are hereditary) define heriditary graphs
+- ✔ (have non-computable version) define clique number
   
 
 Examples: 
@@ -27,3 +27,21 @@ Examples:
 - bipartite
 - complement of bipartite
 
+PROGRESS SUMMARY 16/11
+
+Things we have
+- definitions for "is empty", "is complete", "is induced"
+- statement of empty and complete being hereditary properties (proof to follow)
+- colouring for specific examples (e.g. bipartite?)
+- skeleton definition for perfect
+- non-computable clique number
+
+  Areas of expertise
+  - Dan: subgraphs (esp. induced), cliques
+  - Susie: subgraphs, hereditary properties
+  - Alex: colourings and multipartite
+ 
+  Working on:
+  - Dan: computable clique number
+  - Susie: proving hereditary properties
+  - Alex: colouring

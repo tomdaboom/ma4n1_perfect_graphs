@@ -4,6 +4,7 @@ import Mathlib.Combinatorics.SimpleGraph.Basic
 --import Mathlib.Combinatorics.SimpleGraph.Clique
 import Mathlib.Combinatorics.SimpleGraph.Coloring
 import Mathlib.Combinatorics.SimpleGraph.Subgraph
+import Mathlib.Combinatorics.SimpleGraph.Clique
 --import Mathlib.Combinatorics.SimpleGraph.chromaticNumber
 import Mathlib.Data.Fintype.Basic
 
@@ -29,8 +30,9 @@ namespace PerfectGraphs
 -- lemma Symm : Symmetric AdjExample := by
 -- dsmip at *
 
-
-
+/-
+def CliqueNumber {V : Type} (G : SimpleGraph V) (hasNclique): ℕ :=
+-/
 
 def G : SimpleGraph (Fin 5) where
   Adj x y  :=
@@ -68,13 +70,14 @@ def G'' : Subgraph G where
  symm Symmetric Adj := by aesop_graph
 
 
+
 open SimpleGraph
 theorem subg : G ≤ G := by
   unfold G; 
   aesop_graph
 
 #check (G'' : Subgraph G)
-#check (G' : Subgraph G)
+
 
 #check G'.IsSubgraph G
 
@@ -83,42 +86,17 @@ theorem ex : G'.IsSubgraph G := by
   unfold G G'
   aesop
 
-#eval G'.IsSubgraph G
+def PGIsInduced {V : Type} (H : SimpleGraph V) (H' : Subgraph H) : Prop :=
+  ∀ {v w : V}, v ∈ H'.verts → w ∈ H'.verts → H.Adj v w → H'.Adj v w
 
-#eval G''.IsInduced G
-#check G.IsInduced G'
+theorem ex2 : PGIsInduced G G'' := by
+ unfold G
+ unfold G''
+ aesop_graph
 
-open SimpleGraph
-theorem ind: IsInduced (G'' : Subgraph G) := by
-  unfold G; unfold G';
- 
+def hasNclique {V : Type} (G : SimpleGraph V) (n : ℕ) : Prop :=
+  ∃ t, G.IsNClique n t
 
+noncomputable def nonCliqueNumber {V : Type} (G : SimpleGraph V) : ℕ :=
+  sSup { n : ℕ | hasNclique G n }
 
-
-def exampleColoringFunction (v : Fin 5) : Bool :=
-  v=0 ∨  v=2
-
-
-lemma valid_coloring : ∀ {v w : Fin 5}, G.Adj v w → exampleColoringFunction v ≠ exampleColoringFunction w :=
-  by
-    intros v w h
-    unfold G at h
-    unfold SimpleGraph.Adj at h
-    unfold exampleColoringFunction
-    aesop
-
-
-
-
-
-
-
-
-
-
-
-
-def exampleGraph.Coloring : (exampleGraph).Coloring Bool :=
-  SimpleGraph.Coloring.mk exampleColoringFunction valid_coloring
-
-#check exampleGraph.Coloring
