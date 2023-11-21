@@ -7,6 +7,9 @@ import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.Combinatorics.SimpleGraph.Clique
 --import Mathlib.Combinatorics.SimpleGraph.chromaticNumber
 import Mathlib.Data.Fintype.Basic
+import Aesop.Check
+import Mathlib.Logic.Basic
+import Aesop.Tree.Data
 
 
 
@@ -44,6 +47,9 @@ def G : SimpleGraph (Fin 5) where
     aesop
   loopless a b := by
     aesop
+    refine (?_ (id right.symm)).snd
+    refine (?_ (id left.symm)).snd
+    
 
 def G' : SimpleGraph (Fin 5) where
   Adj x y  :=
@@ -92,7 +98,11 @@ def PGIsInduced {V : Type} (H : SimpleGraph V) (H' : Subgraph H) : Prop :=
 theorem ex2 : PGIsInduced G G'' := by
  unfold G
  unfold G''
- aesop_graph
+ unfold PGIsInduced
+ aesop
+ exact Fin.rev_inj.mp (id left.symm)
+ exact neg_add_eq_zero.mp (id right.symm)
+ sorry
 
 def hasNClique {V : Type} (G : SimpleGraph V) (n : ℕ) : Prop :=
   ∃ t, G.IsNClique n t
@@ -103,4 +113,26 @@ noncomputable def CliqueNumber {V : Type} (G : SimpleGraph V) : ℕ :=
 theorem equivCliqueNumber {V : Type} (G : SimpleGraph V) (k : ℕ) (NClique : hasNClique G k) (notNPlusOneClique : ¬ hasNClique G (k+1)) : CliqueNumber G = k := by
   sorry
 
+/- Maybe can redefine this using cliqueSet -/
 
+theorem ex3 : IsNClique G 2 {0,1} := by
+  unfold IsNClique 
+
+
+theorem faveExampleG : CliqueNumber G = 2 := by
+  unfold CliqueNumber
+  apply equivCliqueNumber
+  unfold hasNClique
+  · use {0,1}
+    apply ex3
+    
+  · intro f
+    norm_num at f
+    unfold hasNClique at f
+    refine Combinator.I ?notNPlusOneClique.a
+    aesop
+
+
+
+
+    
