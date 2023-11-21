@@ -25,6 +25,10 @@ def isEmpty' {V : Type} {G : SimpleGraph V} (H : Subgraph G): Prop :=
 def isComplete {V : Type} (G : SimpleGraph V) : Prop :=
   ∀ u v : V, G.Adj u v
 
+def isComplete' {V : Type} {G : SimpleGraph V} (H : Subgraph G): Prop :=
+  ∀ u v : V, H.Adj u v
+
+
 
 --this is not how i wanna do the two parts
 def set X := X → Prop
@@ -61,10 +65,17 @@ def susIsInduced {V : Type} (H : SimpleGraph V) (H' : Subgraph H) : Prop :=
 example {V : Type} (H : SimpleGraph V)(H' : Subgraph H)(h1: isEmpty H)(h2 : PGIsInduced H H') : isEmpty' H'  := by
   unfold isEmpty'
   unfold isEmpty at h1
-  unfold PGIsInduced at h2
+  unfold PGIsInduced at h2 --unfold all defns
+  intros v w --for vertices
+  --intro f --for new goal : False
   
   
-  
+
+  --there are some applys here, no simps or exacts
+
+
+
+
 
   --contrapose h2
   --unfold PGIsInduced
@@ -83,7 +94,12 @@ example {V : Type} (H : SimpleGraph V)(H' : Subgraph H)(h1: isEmpty H)(h2 : PGIs
 
   sorry
 
-example {V : Type} (H : SimpleGraph V)(H' : Subgraph H)(h1: isComplete H)(h2 : PGIsInduced H H') : isComplete (coe H')  := by
+example {V : Type} (G : SimpleGraph V)(H : Subgraph G)(h1: isComplete G)(h2 : PGIsInduced G H) : isComplete' H  := by
+  unfold isComplete'
+  unfold isComplete at h1
+  unfold PGIsInduced at h2 --unfold all defns
+  intros v w --for vertices
+  apply adj_sub
   sorry
 
 
@@ -114,14 +130,34 @@ def isPerfect {V : Type} (G : SimpleGraph V) : Prop :=
 theorem weakPerfectGraphTheoremForward {V : Type} (G : SimpleGraph V): isPerfect G → isPerfect (compl G):= by
   sorry
 
+example {V: Type}(G : SimpleGraph V): Gᶜᶜ = G := by
+  apply compl_compl
+
+
 theorem weakPerfectGraphTheoremBackward {V : Type} (G : SimpleGraph V): isPerfect (compl G) → isPerfect (G):= by
-  intro f
-  apply weakPerfectGraphTheoremForward at f
+   -- by_contra this is contradiction
+
+   intro h
+
+   apply (weakPerfectGraphTheoremForward Gᶜ) at h
+   --apply (weakPerfectGraphTheoremForward Gᶜ)
+
+   --apply (weakPerfectGraphTheoremForward Gᶜ).compl_compl
+   --apply (weakPerfectGraphTheoremForward ?_).compl_compl
+   sorry
+
+  --contrapose
+  --by_contra
+  --apply not_imp at x✝
+  --apply not_not
 
 theorem weakPerfectGraphTheorem {V : Type} (G : SimpleGraph V) : isPerfect G ↔  isPerfect (compl G)
 := by
+  refine Iff.symm ((fun {a b} => iff_def.mpr) {
+    left := by apply weakPerfectGraphTheoremBackward
+    right := by apply weakPerfectGraphTheoremForward
+  })
 
-  sorry
 
 
 --ORPHANED CODE
