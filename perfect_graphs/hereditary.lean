@@ -51,15 +51,6 @@ def PGIsInduced {V : Type} (H : SimpleGraph V) (H' : Subgraph H) : Prop :=
 
 
 
---coe is defined in Subgraph but for whatever reason was not being recognised for me - this definition is copied and pasted from the source code with a few minor adjustments to the types passed in
-def coe {V : Type}{G : SimpleGraph V}(G' : Subgraph G) : SimpleGraph G'.verts where
-  Adj v w := G'.Adj v w
-  symm _ _ h := G'.symm h
-  loopless v h := loopless G v (G'.adj_sub h)
-
-def susIsInduced {V : Type} (H : SimpleGraph V) (H' : Subgraph H) : Prop :=
-  ∀ v w : V, v ∈ H'.verts ∧ w ∈ H'.verts ∧ H.Adj v w → H'.Adj v w
-
 --statement of empty graphs being a hereditary property
 --I'm working on a proof
 example {V : Type} (H : SimpleGraph V)(H' : Subgraph H)(h1: isEmpty H)(h2 : PGIsInduced H H') : isEmpty' H'  := by
@@ -106,57 +97,7 @@ example {V : Type} (G : SimpleGraph V)(H : Subgraph G)(h1: isComplete G)(h2 : PG
 
 
 
-def cycle (n : ℕ) : (SimpleGraph (Fin n)) :=
-  SimpleGraph.fromRel (λ x y => (x-y : ℕ) = 1)
 
-example : (cycle 5).Adj 1 2 := by
-  unfold cycle SimpleGraph.fromRel --SimpleGraph.Adj
-  simp only
-
-
-
-def hasNClique {V : Type} (G : SimpleGraph V) (n : ℕ) : Prop :=
-  ∃ t, G.IsNClique n t
-
-noncomputable def CliqueNumber {V : Type} (G : SimpleGraph V) : ℕ :=
-  sSup { n : ℕ | hasNClique G n }
-
-theorem equivCliqueNumber {V : Type} (G : SimpleGraph V) (k : ℕ) (NClique : hasNClique G k) (notNPlusOneClique : ¬ hasNClique G (k+1)) : CliqueNumber G = k := by
-  sorry
-
-def isPerfect {V : Type} (G : SimpleGraph V) : Prop :=
-  ∀ H : Subgraph G, PGIsInduced G H → (coe H).chromaticNumber = CliqueNumber (coe H)
-
-theorem weakPerfectGraphTheoremForward {V : Type} (G : SimpleGraph V): isPerfect G → isPerfect (compl G):= by
-  sorry
-
-example {V: Type}(G : SimpleGraph V): Gᶜᶜ = G := by
-  apply compl_compl
-
-
-theorem weakPerfectGraphTheoremBackward {V : Type} (G : SimpleGraph V): isPerfect (compl G) → isPerfect (G):= by
-   -- by_contra this is contradiction
-
-   intro h
-
-   apply (weakPerfectGraphTheoremForward Gᶜ) at h
-   --apply (weakPerfectGraphTheoremForward Gᶜ)
-
-   --apply (weakPerfectGraphTheoremForward Gᶜ).compl_compl
-   --apply (weakPerfectGraphTheoremForward ?_).compl_compl
-   sorry
-
-  --contrapose
-  --by_contra
-  --apply not_imp at x✝
-  --apply not_not
-
-theorem weakPerfectGraphTheorem {V : Type} (G : SimpleGraph V) : isPerfect G ↔  isPerfect (compl G)
-:= by
-  refine Iff.symm ((fun {a b} => iff_def.mpr) {
-    left := by apply weakPerfectGraphTheoremBackward
-    right := by apply weakPerfectGraphTheoremForward
-  })
 
 
 
@@ -171,5 +112,14 @@ def subToSimple {V : Type} {G : SimpleGraph V} (H : Subgraph G): SimpleGraph V w
 --this is not required!! this already exists!!!
 def isSubgraph {V: Type}(G H : SimpleGraph V) : Prop :=
    ∀ u v : V, H.Adj u v → G.Adj u v ∧ ¬ G.Adj u v → ¬ H.Adj u v
+
+
+def cycle (n : ℕ) : (SimpleGraph (Fin n)) :=
+  SimpleGraph.fromRel (λ x y => (x-y : ℕ) = 1)
+
+example : (cycle 5).Adj 1 2 := by
+  unfold cycle SimpleGraph.fromRel --SimpleGraph.Adj
+  simp only
+
 
 end PerfectGraphs
