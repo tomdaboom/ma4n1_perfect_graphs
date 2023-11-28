@@ -10,6 +10,7 @@ import Mathlib.Data.Fintype.Basic
 import Aesop.Check
 import Mathlib.Logic.Basic
 import Aesop.Tree.Data
+set_option trace.aesop true
 
 
 
@@ -95,8 +96,24 @@ def PGIsInduced' {V : Type} (H : SimpleGraph V) (H' : SimpleGraph V) : Prop :=
   ∀ {v w : V}, (H.Adj v w → H'.Adj v w) ∨ (H'.neighborSet v = ∅) ∨ (H'.neighborSet w = ∅)
 
 def F := G.toSubgraph G' subg
+#check F
 theorem ex11 (h : G.toSubgraph G' subg) : G'.IsInduced G := by
+  sorry
+
+#eval F.IsInduced
+
+open Subgraph
+
+theorem ex22 : F.IsInduced := by
+  unfold F
+  unfold IsInduced
+  unfold G
+  unfold G'
+  unfold toSubgraph
+  aesop
   
+  done
+
 
 theorem ex2 : PGIsInduced G G'' := by
  unfold G
@@ -180,7 +197,7 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
     rw [@not_exists]
     intro x
     intro f
-    aesop_graph
+    aesop
 
 
     
