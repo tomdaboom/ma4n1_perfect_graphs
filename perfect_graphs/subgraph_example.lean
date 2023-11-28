@@ -68,9 +68,15 @@ def G'' : Subgraph G where
 
 
 open SimpleGraph
-theorem subg : G ≤ G := by
+theorem subg : G' ≤ G := by
   unfold G; 
+  unfold G';
   aesop_graph
+
+
+
+
+
 
 #check (G'' : Subgraph G)
 
@@ -87,6 +93,10 @@ def PGIsInduced {V : Type} (H : SimpleGraph V) (H' : Subgraph H) : Prop :=
 
 def PGIsInduced' {V : Type} (H : SimpleGraph V) (H' : SimpleGraph V) : Prop :=
   ∀ {v w : V}, (H.Adj v w → H'.Adj v w) ∨ (H'.neighborSet v = ∅) ∨ (H'.neighborSet w = ∅)
+
+def F := G.toSubgraph G' subg
+theorem ex11 (h : G.toSubgraph G' subg) : G'.IsInduced G := by
+  
 
 theorem ex2 : PGIsInduced G G'' := by
  unfold G
@@ -151,7 +161,10 @@ theorem faveExampleG : CliqueNumber G = 2 := by
 def cycle (n : ℕ) : (SimpleGraph (ZMod n)) :=
   SimpleGraph.fromRel (λ x y => x-y = 1)
 
-theorem CliqueNumberCycleIsTwo (n : ℕ) : CliqueNumber (cycle n) = 2 := by
+theorem sizeOfSet : Finset.card {0, 1} = 2 := by
+  norm_num
+
+theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) = 2 := by
   unfold CliqueNumber
   apply equivCliqueNumber
   unfold hasNClique
@@ -160,8 +173,14 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) : CliqueNumber (cycle n) = 2 := by
     unfold IsClique
     unfold cycle
     aesop_graph
-    norm_num
-  · 
+    
+
+  · norm_num
+    unfold hasNClique
+    rw [@not_exists]
+    intro x
+    intro f
+    aesop_graph
 
 
     
