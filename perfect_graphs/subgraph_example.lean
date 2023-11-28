@@ -110,13 +110,15 @@ def hasNClique {V : Type} (G : SimpleGraph V) (n : ℕ) : Prop :=
 noncomputable def CliqueNumber {V : Type} (G : SimpleGraph V) : ℕ :=
   sSup { n : ℕ | hasNClique G n }
 
-theorem equivCliqueNumber {V : Type} (G : SimpleGraph V) (k : ℕ) (NClique : hasNClique G k) (notNPlusOneClique : ¬ hasNClique G (k+1)) : CliqueNumber G = k := by
-  sorry
+-- theorem equivCliqueNumber {V : Type} (G : SimpleGraph V) (k : ℕ) (NClique : hasNClique G k) (notNPlusOneClique : ¬ hasNClique G (k+1)) : CliqueNumber G = k := by
+--   sorry
 
 /- Maybe can redefine this using cliqueSet -/
 
 theorem ex3 : IsNClique G 2 {0,1} := by
-  unfold IsNClique 
+  apply IsNClique.mk
+  unfold 
+  
 
 
 theorem faveExampleG : CliqueNumber G = 2 := by
