@@ -10,7 +10,6 @@ import Mathlib.Data.Fintype.Basic
 import Aesop.Check
 import Mathlib.Logic.Basic
 import Aesop.Tree.Data
-set_option trace.aesop true
 
 
 
@@ -37,15 +36,14 @@ def G : SimpleGraph (Fin 5) where
     aesop
   loopless a b := by
     aesop
-    refine (?_ (id right.symm)).snd
-    refine (?_ (id left.symm)).snd
+
     done
-    
+
 
 def G' : SimpleGraph (Fin 5) where
   Adj x y  :=
     --  notice that I removed the `if .. then .. else ..` since it was not necessary
-    x = 0 ∧ y = 1 ∨ x = 1 ∧ y = 0 
+    x = 0 ∧ y = 1 ∨ x = 1 ∧ y = 0
   symm a b h := by
     --  `aesop` is a "search" tactic: among other things, it splits all cases and tries
     --  various finishing tactics.
@@ -56,28 +54,22 @@ def G' : SimpleGraph (Fin 5) where
 open SimpleGraph
 def G'' : Subgraph G where
  verts := {0, 1}
- Adj x y := x = 0 ∧ y = 1 ∨ x = 1 ∧ y = 0 
- adj_sub := by 
+ Adj x y := x = 0 ∧ y = 1 ∨ x = 1 ∧ y = 0
+ adj_sub := by
   intros v w
   intro f
   unfold Adj G
   aesop
- edge_vert := by 
+ edge_vert := by
   aesop
  symm Symmetric Adj := by aesop_graph
 
 
 
 open SimpleGraph
-theorem subg : G' ≤ G := by
-  unfold G; 
-  unfold G';
+theorem subg : G ≤ G := by
+  unfold G;
   aesop_graph
-
-
-
-
-
 
 #check (G'' : Subgraph G)
 
@@ -95,26 +87,6 @@ def PGIsInduced {V : Type} (H : SimpleGraph V) (H' : Subgraph H) : Prop :=
 def PGIsInduced' {V : Type} (H : SimpleGraph V) (H' : SimpleGraph V) : Prop :=
   ∀ {v w : V}, (H.Adj v w → H'.Adj v w) ∨ (H'.neighborSet v = ∅) ∨ (H'.neighborSet w = ∅)
 
-def F := G.toSubgraph G' subg
-#check F
-theorem ex11 (h : G.toSubgraph G' subg) : G'.IsInduced G := by
-  sorry
-
-#eval F.IsInduced
-
-open Subgraph
-
-theorem ex22 : F.IsInduced := by
-  unfold F
-  unfold IsInduced
-  unfold G
-  unfold G'
-  unfold toSubgraph
-  aesop
-  
-  done
-
-
 theorem ex2 : PGIsInduced G G'' := by
  unfold G
  unfold G''
@@ -123,7 +95,7 @@ theorem ex2 : PGIsInduced G G'' := by
  aesop
  exact Fin.rev_inj.mp (id left.symm)
  exact neg_add_eq_zero.mp (id right.symm)
- rw [← right] 
+ rw [← right]
  exact self_eq_add_left.mp right
  exact self_eq_add_left.mp (id right.symm)
  done
@@ -165,7 +137,7 @@ theorem faveExampleG : CliqueNumber G = 2 := by
     unfold G
     aesop_graph
     norm_num
-    
+
   · norm_num
     unfold hasNClique
     rw [@not_exists]
@@ -178,10 +150,9 @@ theorem faveExampleG : CliqueNumber G = 2 := by
 def cycle (n : ℕ) : (SimpleGraph (ZMod n)) :=
   SimpleGraph.fromRel (λ x y => x-y = 1)
 
-theorem sizeOfSet : Finset.card {0, 1} = 2 := by
-  norm_num
 
-theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) = 2 := by
+
+theorem CliqueNumberCycleIsTwo (n : ℕ) : CliqueNumber (cycle n) = 2 := by
   unfold CliqueNumber
   apply equivCliqueNumber
   unfold hasNClique
@@ -190,15 +161,12 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
     unfold IsClique
     unfold cycle
     aesop_graph
-    
+    /-
+    case h.card_eq
+    n : ℕ
+    ⊢ Finset.card {0, 1} = 2
+    -/
+    intro h
+    norm_num at h
 
-  · norm_num
-    unfold hasNClique
-    rw [@not_exists]
-    intro x
-    intro f
-    aesop
-
-
-    
-    
+  ·
