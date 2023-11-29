@@ -10,7 +10,7 @@ import Mathlib.Data.Fintype.Basic
 import Aesop.Check
 import Mathlib.Logic.Basic
 import Aesop.Tree.Data
-
+set_option trace.aesop true
 
 
 
@@ -36,14 +36,15 @@ def G : SimpleGraph (Fin 5) where
     aesop
   loopless a b := by
     aesop
-
+    refine (?_ (id right.symm)).snd
+    refine (?_ (id left.symm)).snd
     done
-
+    
 
 def G' : SimpleGraph (Fin 5) where
   Adj x y  :=
     --  notice that I removed the `if .. then .. else ..` since it was not necessary
-    x = 0 ∧ y = 1 ∨ x = 1 ∧ y = 0
+    x = 0 ∧ y = 1 ∨ x = 1 ∧ y = 0 
   symm a b h := by
     --  `aesop` is a "search" tactic: among other things, it splits all cases and tries
     --  various finishing tactics.
@@ -54,22 +55,28 @@ def G' : SimpleGraph (Fin 5) where
 open SimpleGraph
 def G'' : Subgraph G where
  verts := {0, 1}
- Adj x y := x = 0 ∧ y = 1 ∨ x = 1 ∧ y = 0
- adj_sub := by
+ Adj x y := x = 0 ∧ y = 1 ∨ x = 1 ∧ y = 0 
+ adj_sub := by 
   intros v w
   intro f
   unfold Adj G
   aesop
- edge_vert := by
+ edge_vert := by 
   aesop
  symm Symmetric Adj := by aesop_graph
 
 
 
 open SimpleGraph
-theorem subg : G ≤ G := by
-  unfold G;
+theorem subg : G' ≤ G := by
+  unfold G; 
+  unfold G';
   aesop_graph
+
+
+
+
+
 
 #check (G'' : Subgraph G)
 
@@ -87,15 +94,32 @@ def PGIsInduced {V : Type} (H : SimpleGraph V) (H' : Subgraph H) : Prop :=
 def PGIsInduced' {V : Type} (H : SimpleGraph V) (H' : SimpleGraph V) : Prop :=
   ∀ {v w : V}, (H.Adj v w → H'.Adj v w) ∨ (H'.neighborSet v = ∅) ∨ (H'.neighborSet w = ∅)
 
+def F := G.toSubgraph G' subg
+#check F
+
+open Subgraph
+
+theorem ex22 : F.IsInduced := by
+  unfold F
+  unfold IsInduced
+  unfold G
+  unfold G'
+  unfold toSubgraph
+  unfold SimpleGraph.Adj
+  simp
+  intros v w
+  sorry
+
+  
+
 theorem ex2 : PGIsInduced G G'' := by
  unfold G
  unfold G''
  unfold PGIsInduced
- unfold Adj
  aesop
  exact Fin.rev_inj.mp (id left.symm)
  exact neg_add_eq_zero.mp (id right.symm)
- rw [← right]
+ rw [← right] 
  exact self_eq_add_left.mp right
  exact self_eq_add_left.mp (id right.symm)
  done
@@ -137,7 +161,7 @@ theorem faveExampleG : CliqueNumber G = 2 := by
     unfold G
     aesop_graph
     norm_num
-
+    
   · norm_num
     unfold hasNClique
     rw [@not_exists]
@@ -150,9 +174,10 @@ theorem faveExampleG : CliqueNumber G = 2 := by
 def cycle (n : ℕ) : (SimpleGraph (ZMod n)) :=
   SimpleGraph.fromRel (λ x y => x-y = 1)
 
+theorem sizeOfSet : Finset.card {0, 1} = 2 := by
+  norm_num
 
-
-theorem CliqueNumberCycleIsTwo (n : ℕ) : CliqueNumber (cycle n) = 2 := by
+theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) = 2 := by
   unfold CliqueNumber
   apply equivCliqueNumber
   unfold hasNClique
@@ -161,12 +186,67 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) : CliqueNumber (cycle n) = 2 := by
     unfold IsClique
     unfold cycle
     aesop_graph
-    /-
-    case h.card_eq
-    n : ℕ
-    ⊢ Finset.card {0, 1} = 2
-    -/
-    intro h
-    norm_num at h
+    refine Finset.card_doubleton ?h.card_eq.h
+    refine zero_mem_nonunits.mp ?h.card_eq.h.a
+    rw [@Set.mem_def]
+    apply?
+    rw [@mem_nonunits_iff]
+    sorry
+    
 
-  ·
+  · norm_num
+    unfold hasNClique
+    rw [@not_exists]
+    intro x
+    rw [@is3Clique_iff]
+    rw [@not_exists]
+    intro a
+    rw [@not_exists]
+    intro b
+    rw [@not_exists]
+    intro c
+    intro f
+    cases f with
+    | intro f1 f2 =>
+      cases f2 with
+      | intro f2 f3 =>
+        cases f3 with
+        | intro f3 f4 =>
+    revert f1
+    unfold SimpleGraph.Adj
+    unfold cycle
+    simp
+    intro f11
+    intro f12
+    cases f12 with
+    | inl h1 => revert f2
+                unfold SimpleGraph.Adj
+                unfold cycle
+                simp
+                intro f21
+                intro f22
+                cases f22 with
+                | inl h2 => revert f3
+                            unfold SimpleGraph.Adj
+                            unfold cycle
+                            simp
+                            intro f31
+                            intro f32
+                            cases f32 with
+                            | inl h3 => rw [<- h1] at h2
+                            | inr h3 => sorry
+
+                | inr h2 => sorry
+    | inr h1 => sorry
+    revert f2
+    unfold SimpleGraph.Adj
+    unfold cycle
+    aesop
+    revert f3
+    unfold SimpleGraph.Adj
+    unfold cycle
+    
+        
+        
+    
+    
