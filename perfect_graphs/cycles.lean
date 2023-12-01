@@ -33,8 +33,53 @@ lemma minuseqrewrite {n : ℕ} (v w : ZMod n) : (v - w = 1) → (v = 1 + w) := b
   rw [← vminuseq]
   simp only [sub_add_cancel]
 
+<<<<<<< HEAD
 lemma i_plus_one_not_both_even {n : ℕ} (i : ZMod n) : ¬ (↑(1 + i) % 2 : ZMod 2) = ((i % 2) : ZMod 2) := by
   apply?
+=======
+lemma i_plus_one_not_both_even (i : ZMod n) : ¬ (((1 + i) % 2) : ZMod 2) = ((i % 2) : ZMod 2) := by
+  intro h
+  let i_val := i.val
+  let i_plus_one_val := (i + 1).val
+
+  -- Compute their mod 2 values
+  let i_mod_2 := i_val % 2
+  let i_plus_one_mod_2 := i_plus_one_val % 2
+
+  -- Use the assumption
+  have mod_2_eq : i_mod_2 = i_plus_one_mod_2 := by
+    rw [← ZMod.val_cast_of_lt i.is_lt, ← ZMod.val_cast_of_lt (i + 1).is_lt, ZMod.cast_val, ZMod.cast_val] at h
+    exact h
+
+  -- Case analysis on i_mod_2
+  cases Nat.mod_two_eq_zero_or_one i_val;
+  -- Case 1: i_val mod 2 is 0 (even)
+  case inl 
+    -- Show that i_plus_one_mod_2 must be 1 (odd), which contradicts mod_2_eq
+    have : i_plus_one_mod_2 = 1 := by
+      rw [Nat.add_mod_right, mod_2_eq, h_1],
+    contradiction 
+  -- Case 2: i_val mod 2 is 1 (odd)
+  case or.inr {
+    -- Show that i_plus_one_mod_2 must be 0 (even), which contradicts mod_2_eq
+    have : i_plus_one_mod_2 = 0 := by
+      rw [Nat.add_mod_right, mod_2_eq, h_1],
+    contradiction }
+
+    
+
+
+
+  
+  
+
+
+  -- case 1: i_mod_2 = 0, i_plus_one_mod_2 = 1, which contradicts mod_2_eq
+  -- case 2: i_mod_2 = 1, i_plus_one_mod_2 = 0, which contradicts mod_2_eq
+  -- other cases are handled by contradiction
+
+
+>>>>>>> ea3689b973650982abec28bdeafe3d0448c7934e
 
 /-
 def evenCycle2Coloring {n : ℕ} (nIsEven : Even n) : (cycle n).Coloring (ZMod 2) :=

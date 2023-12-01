@@ -27,20 +27,31 @@ theorem equivCliqueNumber {V : Type} (G : SimpleGraph V) (k : ℕ) (NClique : ha
 
 --dealing with subgraphs
 
-def PGIsInduced {V : Type} (H : SimpleGraph V) (H' : Subgraph H) : Prop :=
+def isInducedSubgraph {V : Type} (H : SimpleGraph V) (H' : Subgraph H) : Prop :=
   ∀ {v w : V}, v ∈ H'.verts → w ∈ H'.verts → H.Adj v w → H'.Adj v w
 
+
+
+
+#check Fin 5
+
+def isInducedSimpleGraph {V : Type} (H : SimpleGraph V) (H' : SimpleGraph V) : Prop :=
+  ∀ {v w : V}, (H.Adj v w → H'.Adj v w) ∨ (H'.neighborSet v = ∅) ∨ (H'.neighborSet w = ∅)
+
+
+
+
 --coe is defined in Subgraph but for whatever reason was not being recognised for me - this definition is copied and pasted from the source code with a few minor adjustments to the types passed in
-def coe {V : Type}{G : SimpleGraph V}(G' : Subgraph G) : SimpleGraph G'.verts where
-  Adj v w := G'.Adj v w
-  symm _ _ h := G'.symm h
-  loopless v h := loopless G v (G'.adj_sub h)
+def coe {V : Type}{G : SimpleGraph V}(H : Subgraph G) : SimpleGraph H.verts where
+  Adj v w := H.Adj v w
+  symm _ _ h := H.symm h
+  loopless v h := loopless G v (H.adj_sub h)
 
 
 
 --perfect definition
 def isPerfect {V : Type} (G : SimpleGraph V) : Prop :=
-  ∀ H : Subgraph G, PGIsInduced G H → (coe H).chromaticNumber = CliqueNumber (coe H)
+  ∀ H : Subgraph G, isInducedSubgraph G H → (coe H).chromaticNumber = CliqueNumber (coe H)
 
 
 
@@ -80,8 +91,13 @@ theorem weakPerfectGraphTheorem {V : Type} (G : SimpleGraph V) : isPerfect G ↔
 def cycle (n : ℕ) : (SimpleGraph (Fin n)) :=
   SimpleGraph.fromRel (λ x y => (x-y : ℕ) = 1)
 
+
+
+def hasNCycle' {m : ℕ} (G : SimpleGraph (Fin m)) (n : ℕ) : Prop :=
+  isInducedSubgraph G (G.toSubgraph (cycle m))
+
 def hasNCycle {V : Type} (G : SimpleGraph V) (n : ℕ) : Prop :=
-  PGIsInduced G (cycle n).toSubgraph
+  isInducedSubgraph G (G.toSubgraph (cycle n))
 
 def hasOddHole {V : Type} (G : SimpleGraph V) : Prop :=
   ∃ n : ℕ, hasNCycle G (2*n+5) --odd cycle of length ≥ 5, using that 0 ∈ ℕ in Lean
