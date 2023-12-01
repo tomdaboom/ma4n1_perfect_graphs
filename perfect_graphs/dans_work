@@ -170,12 +170,38 @@ theorem faveExampleG : CliqueNumber G = 2 := by
     cases t with
     | mk val nodup => interval_cases val
 
+lemma minuseqrewrite {n : ℕ} {v w : ZMod n} : (v - w = 1) → (v = 1 + w) := by
+  intros vminuseq
+  rw [← vminuseq]
+  simp only [sub_add_cancel]
+
+lemma one_one_to_two {n : ℕ} {x y z : ZMod n} : (x - y = 1) → (z - x = 1) → (z - y = 2) := by
+  intros xminy zminx
+  have yplusone := minuseqrewrite xminy
+  rw [yplusone] at zminx
+  rw [add_comm] at zminx
+  rw[sub_add_eq_sub_sub] at zminx
+  rw [<- one_add_one_eq_two]
+  rw [← zminx]
+  exact eq_add_of_sub_eq (congrArg (HSub.hSub (z - y)) zminx)
+
+lemma one_one_to_minus_two {n : ℕ} {x y z : ZMod n} : (x - y = 1) → (z - x = 1) → (y - z = -2) := by
+  intros xminy zminx
+  have yplusone := minuseqrewrite xminy
+  rw [yplusone] at zminx
+  rw [add_comm] at zminx
+  rw[sub_add_eq_sub_sub] at zminx
+  rw [<- one_add_one_eq_two]
+  rw [← zminx]
+  
+
+
+
+  
 
 def cycle (n : ℕ) : (SimpleGraph (ZMod n)) :=
   SimpleGraph.fromRel (λ x y => x-y = 1)
 
-theorem sizeOfSet : Finset.card {0, 1} = 2 := by
-  norm_num
 
 theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) = 2 := by
   unfold CliqueNumber
@@ -189,9 +215,11 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
     refine Finset.card_doubleton ?h.card_eq.h
     refine zero_mem_nonunits.mp ?h.card_eq.h.a
     rw [@Set.mem_def]
-    apply?
-    rw [@mem_nonunits_iff]
-    sorry
+    unfold nonunits
+    unfold IsUnit
+    unfold setOf
+    aesop
+
     
 
   · norm_num
@@ -233,18 +261,74 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
                             intro f31
                             intro f32
                             cases f32 with
-                            | inl h3 => rw [<- h1] at h2
-                            | inr h3 => sorry
+                            | inl h3 => have h1' := minuseqrewrite h1
+                                        have h2' := minuseqrewrite h2
+                                        rw [h1'] at h2'
+                                        have h2'' := add_left_cancel h2'
+                                        revert h2''
+                                        exact fun h2'' => f31 h2''
+                            | inr h3 => have h1' := minuseqrewrite h1
+                                        have h2' := minuseqrewrite h2
+                                        rw [h1'] at h2'
+                                        have h2'' := add_left_cancel h2'
+                                        revert h2''
+                                        exact fun h2'' => f31 h2''
 
-                | inr h2 => sorry
-    | inr h1 => sorry
-    revert f2
-    unfold SimpleGraph.Adj
-    unfold cycle
-    aesop
-    revert f3
-    unfold SimpleGraph.Adj
-    unfold cycle
+                | inr h2 => revert f3
+                            unfold SimpleGraph.Adj
+                            unfold cycle
+                            simp
+                            intro f31
+                            intro f32
+                            cases f32 with
+                            | inl h3 => have h4 := one_one_to_two h1 h2
+
+                            | inr h3 => have h2' := minuseqrewrite h2
+                                        have h3' := minuseqrewrite h3
+                                        rw [h3'] at h2'
+                                        have h2'' := add_left_cancel h2'
+                                        revert h2''
+                                        exact fun h2'' => f11 (id h2''.symm)
+    | inr h1 => revert f2
+                unfold SimpleGraph.Adj
+                unfold cycle
+                simp
+                intro f21
+                intro f22
+                cases f22 with
+                | inl h2 => revert f3
+                            unfold SimpleGraph.Adj
+                            unfold cycle
+                            simp
+                            intro f31
+                            intro f32
+                            cases f32 with
+                            | inl h3 => have h1' := minuseqrewrite h1
+                                        have h3' := minuseqrewrite h3
+                                        rw [h1'] at h3'
+                                        have h3'' := add_left_cancel h3'
+                                        revert h3''
+                                        exact fun h3'' => f21 h3''
+                            | inr h3 => sorry
+                | inr h2 => revert f3
+                            unfold SimpleGraph.Adj
+                            unfold cycle
+                            simp
+                            intro f31
+                            intro f32
+                            cases f32 with
+                            | inl h3 => have h1' := minuseqrewrite h1
+                                        have h3' := minuseqrewrite h3
+                                        rw [h1'] at h3'
+                                        have h3'' := add_left_cancel h3'
+                                        revert h3''
+                                        exact fun h3'' => f21 h3''
+                            | inr h3 => have h2' := minuseqrewrite h2
+                                        have h3' := minuseqrewrite h3
+                                        rw [h2'] at h3'
+                                        have h3'' := add_left_cancel h3'
+                                        revert h3''
+                                        exact fun h3'' => f11 h3''
     
         
         
