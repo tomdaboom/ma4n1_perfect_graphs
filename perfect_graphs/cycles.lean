@@ -28,14 +28,15 @@ lemma adjMeansDiffIsOne {n : ℕ} (u : ZMod n) (v : ZMod n) : (cycle n).Adj u v 
   cases u_v_adj
   trivial
 
-lemma minuseqrewrite {n : ℕ} {v w : ZMod n} : (v - w = 1) → (v = 1 + w) := by
+lemma minuseqrewrite {n : ℕ} (v w : ZMod n) : (v - w = 1) → (v = 1 + w) := by
   intros vminuseq
   rw [← vminuseq]
   simp only [sub_add_cancel]
 
-lemma i_plus_one_not_both_even (i : ZMod n) : ¬ (((1 + i) % 2) : ZMod 2) = ((i % 2) : ZMod 2) := by
-  sorry
+lemma i_plus_one_not_both_even {n : ℕ} (i : ZMod n) : ¬ (↑(1 + i) % 2 : ZMod 2) = ((i % 2) : ZMod 2) := by
+  apply?
 
+/-
 def evenCycle2Coloring {n : ℕ} (nIsEven : Even n) : (cycle n).Coloring (ZMod 2) :=
   SimpleGraph.Coloring.mk
     (λ v => v % 2)
@@ -46,9 +47,9 @@ def evenCycle2Coloring {n : ℕ} (nIsEven : Even n) : (cycle n).Coloring (ZMod 2
       intros v_u_eq_mod_2
       unfold SimpleGraph.Adj; unfold cycle;
       simp only [SimpleGraph.fromRel_adj, ne_eq, not_and]
-      intros v_neq_w
-      sorry
+      contrapose; simp only [not_not]
     )
+-/
 
 /-
       intros v w v_w_adj
@@ -58,6 +59,20 @@ def evenCycle2Coloring {n : ℕ} (nIsEven : Even n) : (cycle n).Coloring (ZMod 2
       simp only [SimpleGraph.fromRel_adj, ne_eq] at v_w_adj
       have diff_one := v_w_adj.right
     -/
+
+
+def evenCycle2Coloring {n : ℕ} (nIsEven : Even n)
+  : (cycle n).Coloring Bool :=
+  SimpleGraph.Coloring.mk
+    (λ v => ((v : ℕ) % 2 == 0)
+    (by
+      intros v w
+      unfold SimpleGraph.Adj; unfold cycle;
+      simp only [SimpleGraph.fromRel_adj, ne_eq, and_imp]
+      contrapose; simp only [not_forall, not_not, exists_prop, and_imp]
+      sorry
+    )
+
 
 lemma evenCycles2Colorable {n : ℕ} : (cycle (2*n)).Colorable 2 := by
   sorry
@@ -69,3 +84,28 @@ theorem evenCyclesChiIsTwo {n : ℕ} : (cycle (2*n)).chromaticNumber = 2 := by
   apply chromaticNumberAltDef
   · exact evenCycles2Colorable
   · exact cyclesNot1Colorable
+
+--lemma if_false_branch_then_false {T : Type} {a b : T} {p : Prop} (h : ¬ p)
+--  : b = (if p then a else b) := by
+
+
+def cycle3Coloring {n : ℕ} : (cycle n).Coloring (Fin 3) :=
+  SimpleGraph.Coloring.mk
+  (λ v => if v == n - 1 then 2 else v % 2)
+  (by
+    intros v w
+    unfold SimpleGraph.Adj cycle
+    simp only [SimpleGraph.fromRel_adj, ne_eq, CharP.cast_eq_zero, zero_sub, beq_iff_eq, and_imp]
+    intros v_neq_w v_diff_w_is_one
+    by_cases v=-1
+    · rw [h]
+      simp only [ite_true]
+      rw [← @ne_eq, @ne_comm, @ne_eq] at v_neq_w
+      rw [← h]
+      rw [← iff_false] at v_neq_w
+      intros x
+      sorry
+
+    --· apply?
+
+  )
