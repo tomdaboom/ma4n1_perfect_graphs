@@ -1,4 +1,4 @@
-import Mathlib.Tactic
+import Mathlib
 import Mathlib.Combinatorics.SimpleGraph.Basic
 --import Mathlib.Combinatorics.SimpleGraph.Basic
 --import Mathlib.Combinatorics.SimpleGraph.Clique
@@ -22,12 +22,6 @@ namespace PerfectGraphs
 
 
 
--- lemma Symm : Symmetric AdjExample := by
--- dsmip at *
-
-/-
-def CliqueNumber {V : Type} (G : SimpleGraph V) (hasNclique): ℕ :=
--/
 
 def G : SimpleGraph (Fin 5) where
   Adj x y  :=
@@ -124,7 +118,7 @@ theorem ex2 : PGIsInduced G G'' := by
  exact self_eq_add_left.mp (id right.symm)
  done
 
-theorem ex22 : PGIsInduced' G G' := by
+theorem ex202 : PGIsInduced' G G' := by
   unfold PGIsInduced'
   unfold G
   unfold G'
@@ -197,15 +191,17 @@ lemma one_one_to_minus_two {n : ℕ} {x y z : ZMod n} : (x - y = 1) → (z - x =
   rw [← @eq_neg_add_iff_add_eq]
   rw [@neg_sub]
   symm
-  sorry
-  
-
-
-
-  
+  rwa [<- sub_eq_add_neg] 
+    
 
 def cycle (n : ℕ) : (SimpleGraph (ZMod n)) :=
   SimpleGraph.fromRel (λ x y => x-y = 1)
+
+lemma four_gt_one (n : ℕ) (h : Fact (4 ≤ n)) : Fact (1 < n) := by
+  have h' := Fact.elim h
+  refine fact_iff.mpr ?_
+  linarith
+  
 
 
 theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) = 2 := by
@@ -221,9 +217,10 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
     refine zero_mem_nonunits.mp ?h.card_eq.h.a
     rw [@Set.mem_def]
     unfold nonunits
-    unfold IsUnit
-    unfold setOf
-    aesop
+    rw [@Set.setOf_app_iff]
+    have g : Fact (4 ≤ n) := by exact { out := h } 
+    have h' : Nontrivial (ZMod n) := by have g' := four_gt_one n ; have g'' := g' g; exact ZMod.nontrivial n;
+    exact not_isUnit_zero
 
     
 
