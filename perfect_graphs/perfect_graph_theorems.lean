@@ -12,7 +12,7 @@ namespace PerfectGraphs
 open SimpleGraph
 open Subgraph
 
---dealing with cliques
+--CLIQUES
 
 def hasNClique {V : Type} (G : SimpleGraph V) (n : ℕ) : Prop :=
   ∃ t, G.IsNClique n t
@@ -25,7 +25,7 @@ theorem equivCliqueNumber {V : Type} (G : SimpleGraph V) (k : ℕ) (NClique : ha
 
 
 
---dealing with subgraphs
+--SUBGRAPHS
 
 def isInducedSubgraph {V : Type} (H : SimpleGraph V) (H' : Subgraph H) : Prop :=
   ∀ {v w : V}, v ∈ H'.verts → w ∈ H'.verts → H.Adj v w → H'.Adj v w
@@ -49,45 +49,14 @@ def coe {V : Type}{G : SimpleGraph V}(H : Subgraph G) : SimpleGraph H.verts wher
 
 
 
---perfect definition
+--PERFECT DEFINITION
 def isPerfect {V : Type} (G : SimpleGraph V) : Prop :=
   ∀ H : Subgraph G, isInducedSubgraph G H → (coe H).chromaticNumber = CliqueNumber (coe H)
 
 
 
---WPGT
-theorem weakPerfectGraphTheoremForward {V : Type} (G : SimpleGraph V): isPerfect G → isPerfect (compl G):= by
-  sorry
 
-
-
-theorem weakPerfectGraphTheoremBackward {V : Type} (G : SimpleGraph V): isPerfect (compl G) → isPerfect (G):= by
-   -- by_contra this is contradiction
-
-   intro h
-
-   apply (weakPerfectGraphTheoremForward Gᶜ) at h
-   --apply (weakPerfectGraphTheoremForward Gᶜ)
-
-   --apply (weakPerfectGraphTheoremForward Gᶜ).compl_compl
-   --apply (weakPerfectGraphTheoremForward ?_).compl_compl
-   sorry
-
-  --contrapose
-  --by_contra
-  --apply not_imp at x✝
-  --apply not_not
-
-theorem weakPerfectGraphTheorem {V : Type} (G : SimpleGraph V) : isPerfect G ↔  isPerfect (compl G)
-:= by
-  refine Iff.symm ((fun {a b} => iff_def.mpr) {
-    left := by apply weakPerfectGraphTheoremBackward
-    right := by apply weakPerfectGraphTheoremForward
-  })
-
-
-
---dealing with cycles
+--DEALING WITH CYCLES - CURRENTLY IN PROGRESS
 def cycle (n : ℕ) : (SimpleGraph (Fin n)) :=
   SimpleGraph.fromRel (λ x y => (x-y : ℕ) = 1)
 
@@ -102,6 +71,31 @@ def hasNCycle {V : Type} (G : SimpleGraph V) (n : ℕ) : Prop :=
 def hasOddHole {V : Type} (G : SimpleGraph V) : Prop :=
   ∃ n : ℕ, hasNCycle G (2*n+5) --odd cycle of length ≥ 5, using that 0 ∈ ℕ in Lean
 
---SPGT
+--STRONG PERFECT GRAPH THEOREM
 theorem strongPerfectGraphTheorem {V : Type} (G : SimpleGraph V) : isPerfect G ↔ ¬ hasOddHole G ∧ ¬ hasOddHole Gᶜ := by
   sorry
+
+--WEAK PERFECT GRAPH THEOREM
+--Prove one direction using SPGT
+theorem weakPerfectGraphTheoremForward {V : Type} (G : SimpleGraph V): isPerfect G → isPerfect (compl G):= by
+  intro h
+  rw [@strongPerfectGraphTheorem]
+  rw [@strongPerfectGraphTheorem] at h
+  refine And.symm ?_
+  rw[compl_compl]
+  apply h
+
+--Prove other direction using Gᶜᶜ = G
+theorem weakPerfectGraphTheoremBackward {V : Type} (G : SimpleGraph V): isPerfect (compl G) → isPerfect (G):= by
+   intro h
+   apply (weakPerfectGraphTheoremForward Gᶜ) at h
+   rw [compl_compl] at h
+   apply h
+
+--Unify both directions into the Weak Perfect Graph Theorem
+theorem weakPerfectGraphTheorem {V : Type} (G : SimpleGraph V) : isPerfect G ↔  isPerfect (compl G)
+:= by
+  refine Iff.symm ((fun {a b} => iff_def.mpr) {
+    left := by apply weakPerfectGraphTheoremBackward
+    right := by apply weakPerfectGraphTheoremForward
+  })
