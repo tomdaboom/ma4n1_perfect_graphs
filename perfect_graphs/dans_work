@@ -202,6 +202,10 @@ lemma four_gt_one (n : ℕ) (h : Fact (4 ≤ n)) : Fact (1 < n) := by
   refine fact_iff.mpr ?_
   linarith
   
+theorem neg_one_ne_one {n : ℕ} (h : 3 < n) : (-2 : ZMod n) ≠ 1 := by
+  intro f
+  have f' := add_left_cancel_iff.mpr f 2
+  
 
 
 theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) = 2 := by
@@ -287,6 +291,7 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
                                         rw [h4] at h3
                                         revert h3
                                         
+
                             | inr h3 => have h2' := minuseqrewrite h2
                                         have h3' := minuseqrewrite h3
                                         rw [h3'] at h2'
