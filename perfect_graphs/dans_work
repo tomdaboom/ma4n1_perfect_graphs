@@ -202,11 +202,16 @@ lemma four_gt_one (n : ℕ) (h : Fact (4 ≤ n)) : Fact (1 < n) := by
   refine fact_iff.mpr ?_
   linarith
   
-theorem neg_one_ne_one {n : ℕ} (h : 3 < n) : (-2 : ZMod n) ≠ 1 := by
+theorem neg_two_ne_one {n : ℕ} (h : 3 < n) : (-2 : ZMod n) ≠ 1 := by
   intro f
-  have f' := add_left_cancel_iff.mpr f 2
+  rw [<- add_left_cancel_iff (a := (2 : ZMod n))] at f
+  simp only [add_right_neg] at f 
+  norm_num at f
+  revert f
+  simp only [imp_false]
+  rw [← @ne_eq]
+  apply ZMod.cast
   
-
 
 theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) = 2 := by
   unfold CliqueNumber
@@ -227,7 +232,6 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
     exact not_isUnit_zero
 
     
-
   · norm_num
     unfold hasNClique
     rw [@not_exists]
@@ -290,6 +294,7 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
                             | inl h3 => have h4 := one_one_to_minus_two h1 h2
                                         rw [h4] at h3
                                         revert h3
+                                        simp
                                         
 
                             | inr h3 => have h2' := minuseqrewrite h2
