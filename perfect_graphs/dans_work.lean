@@ -138,6 +138,10 @@ noncomputable def CliqueNumber {V : Type} (G : SimpleGraph V) : ℕ :=
   sSup { n : ℕ | hasNClique G n }
 
 theorem equivCliqueNumber {V : Type} (G : SimpleGraph V) (k : ℕ) (NClique : hasNClique G k) (notNPlusOneClique : ¬ hasNClique G (k+1)) : CliqueNumber G = k := by
+  unfold CliqueNumber
+  unfold sSup
+  unfold hasNClique
+  unfold Nat.instSupSetNat
   sorry
 
 /- Maybe can redefine this using cliqueSet -/
@@ -291,7 +295,7 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
                             | inl h3 => have h4 := one_one_to_minus_two h1 h2
                                         rw [h4] at h3
                                         revert h3
-                                        simp
+                                        rw [imp_false]
                                         rw [<- ne_eq]
                                         have h' := Nat.succ_le_iff.mp h
                                         exact neg_two_ne_one h'
@@ -325,7 +329,7 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
                             | inr h3 => have h4 := one_one_to_minus_two h1 h3
                                         rw [h4] at h2
                                         revert h2
-                                        simp
+                                        rw [imp_false]
                                         rw [<- ne_eq]
                                         have h' := Nat.succ_le_iff.mp h
                                         exact neg_two_ne_one h'
