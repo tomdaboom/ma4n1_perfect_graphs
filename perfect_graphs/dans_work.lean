@@ -147,27 +147,6 @@ theorem equivCliqueNumber {V : Type} (G : SimpleGraph V) (k : ℕ) (NClique : ha
 /- Maybe can redefine this using cliqueSet -/
 
 
-
-
-theorem faveExampleG : CliqueNumber G = 2 := by
-  unfold CliqueNumber
-  apply equivCliqueNumber
-  unfold hasNClique
-  · use {0,1}
-    apply IsNClique.mk
-    unfold IsClique
-    unfold G
-    aesop_graph
-    norm_num
-
-  · norm_num
-    unfold hasNClique
-    rw [@not_exists]
-    intro t
-    intro f
-    cases t with
-    | mk val nodup => interval_cases val
-
 lemma minuseqrewrite {n : ℕ} {v w : ZMod n} : (v - w = 1) → (v = 1 + w) := by
   intros vminuseq
   rw [← vminuseq]
