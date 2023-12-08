@@ -48,48 +48,32 @@ def isBipartite' {V : Type} (G : SimpleGraph V) : Prop :=
 def PGIsInduced {V : Type} (H : SimpleGraph V) (H' : Subgraph H) : Prop :=
   ∀ {v w : V}, v ∈ H'.verts → w ∈ H'.verts → H.Adj v w → H'.Adj v w
 
-
+--essentially a rewritten version of adj_sub, but useful to use in empty hereditary
+theorem edgeNotInGraphNotInSubgraph {V : Type}(G : SimpleGraph V)(H : Subgraph G): ∀ u v : V, ¬ G.Adj u v → ¬ H.Adj u v
+:= by
+  intro u v
+  contrapose
+  rw[not_not,not_not]
+  apply adj_sub
 
 
 --statement of empty graphs being a hereditary property
---I'm working on a proof
-example {V : Type} (H : SimpleGraph V)(H' : Subgraph H)(h1: isEmpty H)(h2 : PGIsInduced H H') : isEmpty' H'  := by
-  unfold isEmpty'
-  unfold isEmpty at h1
-  unfold PGIsInduced at h2 --unfold all defns
-  intros v w --for vertices
-  --intro f --for new goal : False
+theorem emptyHereditary {V : Type} (G : SimpleGraph V)(H : Subgraph G): isEmpty G → isEmpty' H  := by
+  unfold isEmpty isEmpty'
+  intros h u v --for vertices
+  exact edgeNotInGraphNotInSubgraph G H u v (h u v)
+
+theorem completeHereditary {V : Type} (G : SimpleGraph V)(H : Subgraph G)(h1: PGIsInduced G H): isComplete G → isComplete' H  := by
+  unfold isComplete isComplete'
+  intros h u v --for vertices
   
-  
 
-  --there are some applys here, no simps or exacts
-
-
-
-
-
-  --contrapose h2
-  --unfold PGIsInduced
-  --simp only [not_forall, exists_prop, exists_and_left]
-
-  --contrapose h1
-  --unfold isEmpty
-  --contrapose h2
-  --unfold PGIsInduced
-  --apply of_not_not at h1
-
-  --contrapose h2
-  --unfold PGIsInduced
-  --aesop
-
-
-  sorry
 
 example {V : Type} (G : SimpleGraph V)(H : Subgraph G)(h1: isComplete G)(h2 : PGIsInduced G H) : isComplete' H  := by
   unfold isComplete'
   unfold isComplete at h1
   unfold PGIsInduced at h2 --unfold all defns
-  intros v w --for vertices
+  intros u v --for vertices
   apply adj_sub
   sorry
 

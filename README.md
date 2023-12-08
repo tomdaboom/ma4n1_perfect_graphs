@@ -45,3 +45,22 @@ Things we have
   - Dan: computable clique number
   - Susie: proving hereditary properties
   - Alex: colouring
+
+
+
+HOLIDAY PLANS 8/12
+susie
+-prove hereditary things
+-write up perfect statements/ theorems from graph theory module
+-nice simple example SPGT
+
+dan
+-find clique number for as many graphs as possible (empty, complete, etc.)
+
+tom
+-can colour odd cycle in 2 colours
+-nice little colourings and cliques theorems
+-colouring numbers for as many graphs as possible
+
+alex
+-embeddings and homomorphisms
