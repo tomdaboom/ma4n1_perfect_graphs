@@ -33,53 +33,8 @@ lemma minuseqrewrite {n : ℕ} (v w : ZMod n) : (v - w = 1) → (v = 1 + w) := b
   rw [← vminuseq]
   simp only [sub_add_cancel]
 
-<<<<<<< HEAD
 lemma i_plus_one_not_both_even {n : ℕ} (i : ZMod n) : ¬ (↑(1 + i) % 2 : ZMod 2) = ((i % 2) : ZMod 2) := by
   apply?
-=======
-lemma i_plus_one_not_both_even (i : ZMod n) : ¬ (((1 + i) % 2) : ZMod 2) = ((i % 2) : ZMod 2) := by
-  intro h
-  let i_val := i.val
-  let i_plus_one_val := (i + 1).val
-
-  -- Compute their mod 2 values
-  let i_mod_2 := i_val % 2
-  let i_plus_one_mod_2 := i_plus_one_val % 2
-
-  -- Use the assumption
-  have mod_2_eq : i_mod_2 = i_plus_one_mod_2 := by
-    rw [← ZMod.val_cast_of_lt i.is_lt, ← ZMod.val_cast_of_lt (i + 1).is_lt, ZMod.cast_val, ZMod.cast_val] at h
-    exact h
-
-  -- Case analysis on i_mod_2
-  cases Nat.mod_two_eq_zero_or_one i_val;
-  -- Case 1: i_val mod 2 is 0 (even)
-  case inl 
-    -- Show that i_plus_one_mod_2 must be 1 (odd), which contradicts mod_2_eq
-    have : i_plus_one_mod_2 = 1 := by
-      rw [Nat.add_mod_right, mod_2_eq, h_1],
-    contradiction 
-  -- Case 2: i_val mod 2 is 1 (odd)
-  case or.inr {
-    -- Show that i_plus_one_mod_2 must be 0 (even), which contradicts mod_2_eq
-    have : i_plus_one_mod_2 = 0 := by
-      rw [Nat.add_mod_right, mod_2_eq, h_1],
-    contradiction }
-
-    
-
-
-
-  
-  
-
-
-  -- case 1: i_mod_2 = 0, i_plus_one_mod_2 = 1, which contradicts mod_2_eq
-  -- case 2: i_mod_2 = 1, i_plus_one_mod_2 = 0, which contradicts mod_2_eq
-  -- other cases are handled by contradiction
-
-
->>>>>>> ea3689b973650982abec28bdeafe3d0448c7934e
 
 /-
 def evenCycle2Coloring {n : ℕ} (nIsEven : Even n) : (cycle n).Coloring (ZMod 2) :=
@@ -133,8 +88,14 @@ theorem evenCyclesChiIsTwo {n : ℕ} : (cycle (2*n)).chromaticNumber = 2 := by
 --lemma if_false_branch_then_false {T : Type} {a b : T} {p : Prop} (h : ¬ p)
 --  : b = (if p then a else b) := by
 
+lemma moduloUpperBound {n : ℕ} (a b : Fin n) : a%b ≠ b := by
+  sorry
 
-def cycle3Coloring {n : ℕ} : (cycle n).Coloring (Fin 3) :=
+lemma sumParity {n : ℕ} (a b : Fin n) (h : a - b = 1) : a%2 ≠ b%2 := by
+  sorry
+
+
+def cycle3Coloring {n : ℕ} : (cycle n).Coloring (ZMod 3) :=
   SimpleGraph.Coloring.mk
   (λ v => if v == n - 1 then 2 else v % 2)
   (by
@@ -142,15 +103,28 @@ def cycle3Coloring {n : ℕ} : (cycle n).Coloring (Fin 3) :=
     unfold SimpleGraph.Adj cycle
     simp only [SimpleGraph.fromRel_adj, ne_eq, CharP.cast_eq_zero, zero_sub, beq_iff_eq, and_imp]
     intros v_neq_w v_diff_w_is_one
-    by_cases v=-1
+    by_cases h : v=-1
     · rw [h]
       simp only [ite_true]
       rw [← @ne_eq, @ne_comm, @ne_eq] at v_neq_w
-      rw [← h]
-      rw [← iff_false] at v_neq_w
-      intros x
-      sorry
+      rw [← h, if_neg]
+      have mb := moduloUpperBound (w : Fin 3) 2
+      exact id (Ne.symm mb)
+      exact v_neq_w
 
-    --· apply?
+    · rw [if_neg]
+      by_cases q : w = -1
+      · rw [← q, if_pos]
+        have mb := moduloUpperBound (v : Fin 3) 2
+        exact id (Ne.symm mb)
+        triv
+      · rw [if_neg]
+
+
+        cases v_diff_w_is_one with
+        | inl vminw => have sp := sumParity v w vminw;
+
+
+        | inr wminv =>
 
   )
