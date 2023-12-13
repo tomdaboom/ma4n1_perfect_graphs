@@ -20,13 +20,13 @@ def isEmpty {V : Type} (G : SimpleGraph V) : Prop :=
 
 --identical other than working for subgraphs, not currently using this but may be useful to have around
 def isEmpty' {V : Type} {G : SimpleGraph V} (H : Subgraph G): Prop :=
-  ∀ u v : V, ¬ H.Adj u v
+  ∀ u v : H.verts, ¬ H.Adj u v
 
 def isComplete {V : Type} (G : SimpleGraph V) : Prop :=
   ∀ u v : V, G.Adj u v
 
 def isComplete' {V : Type} {G : SimpleGraph V} (H : Subgraph G): Prop :=
-  ∀ u v : V, H.Adj u v
+  ∀ u v : H.verts, H.Adj u v
 
 
 
@@ -48,13 +48,23 @@ def isBipartite' {V : Type} (G : SimpleGraph V) : Prop :=
 def PGIsInduced {V : Type} (H : SimpleGraph V) (H' : Subgraph H) : Prop :=
   ∀ {v w : V}, v ∈ H'.verts → w ∈ H'.verts → H.Adj v w → H'.Adj v w
 
---essentially a rewritten version of adj_sub, but useful to use in empty hereditary
+--essentially a rewritten version of adj_sub, but useful for proofs
 theorem edgeNotInGraphNotInSubgraph {V : Type}(G : SimpleGraph V)(H : Subgraph G): ∀ u v : V, ¬ G.Adj u v → ¬ H.Adj u v
 := by
   intro u v
   contrapose
   rw[not_not,not_not]
   apply adj_sub
+
+--essentially a rewritten version of PGIsInducedSubgraph, but useful for proofs
+ theorem edgeInGraphInInducedSubgraph {V : Type}(G : SimpleGraph V)(H : Subgraph G)(h: PGIsInduced G H): ∀ u v : H.verts , G.Adj u v → H.Adj u v
+:= by
+  intro v w
+  rw[PGIsInduced] at h
+  apply h
+  simp only [Subtype.coe_prop]
+  exact Subtype.mem w
+
 
 
 --statement of empty graphs being a hereditary property
@@ -65,17 +75,11 @@ theorem emptyHereditary {V : Type} (G : SimpleGraph V)(H : Subgraph G): isEmpty 
 
 theorem completeHereditary {V : Type} (G : SimpleGraph V)(H : Subgraph G)(h1: PGIsInduced G H): isComplete G → isComplete' H  := by
   unfold isComplete isComplete'
-  intros h u v --for vertices
-  
+  intros h2 u v --for vertices
+  unfold PGIsInduced at h1
+  exact edgeInGraphInInducedSubgraph G H h1 u v (h2 u v)
 
 
-example {V : Type} (G : SimpleGraph V)(H : Subgraph G)(h1: isComplete G)(h2 : PGIsInduced G H) : isComplete' H  := by
-  unfold isComplete'
-  unfold isComplete at h1
-  unfold PGIsInduced at h2 --unfold all defns
-  intros u v --for vertices
-  apply adj_sub
-  sorry
 
 
 
