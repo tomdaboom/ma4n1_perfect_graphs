@@ -33,12 +33,12 @@ def G : SimpleGraph (Fin 5) where
     refine (?_ (id right.symm)).snd
     refine (?_ (id left.symm)).snd
     done
-
+    
 
 def G' : SimpleGraph (Fin 5) where
   Adj x y  :=
     --  notice that I removed the `if .. then .. else ..` since it was not necessary
-    x = 0 ∧ y = 1 ∨ x = 1 ∧ y = 0
+    x = 0 ∧ y = 1 ∨ x = 1 ∧ y = 0 
   symm a b h := by
     --  `aesop` is a "search" tactic: among other things, it splits all cases and tries
     --  various finishing tactics.
@@ -49,13 +49,13 @@ def G' : SimpleGraph (Fin 5) where
 open SimpleGraph
 def G'' : Subgraph G where
  verts := {0, 1}
- Adj x y := x = 0 ∧ y = 1 ∨ x = 1 ∧ y = 0
- adj_sub := by
+ Adj x y := x = 0 ∧ y = 1 ∨ x = 1 ∧ y = 0 
+ adj_sub := by 
   intros v w
   intro f
   unfold Adj G
   aesop
- edge_vert := by
+ edge_vert := by 
   aesop
  symm Symmetric Adj := by aesop_graph
 
@@ -63,7 +63,7 @@ def G'' : Subgraph G where
 
 open SimpleGraph
 theorem subg : G' ≤ G := by
-  unfold G;
+  unfold G; 
   unfold G';
   aesop_graph
 
@@ -104,7 +104,7 @@ theorem ex22 : F.IsInduced := by
   intros v w
   sorry
 
-
+  
 
 theorem ex2 : PGIsInduced G G'' := by
  unfold G
@@ -113,7 +113,7 @@ theorem ex2 : PGIsInduced G G'' := by
  aesop
  exact Fin.rev_inj.mp (id left.symm)
  exact neg_add_eq_zero.mp (id right.symm)
- rw [← right]
+ rw [← right] 
  exact self_eq_add_left.mp right
  exact self_eq_add_left.mp (id right.symm)
  done
@@ -138,14 +138,31 @@ noncomputable def CliqueNumber {V : Type} (G : SimpleGraph V) : ℕ :=
   sSup { n : ℕ | hasNClique G n }
 
 theorem equivCliqueNumber {V : Type} (G : SimpleGraph V) (k : ℕ) (NClique : hasNClique G k) (notNPlusOneClique : ¬ hasNClique G (k+1)) : CliqueNumber G = k := by
-  unfold CliqueNumber
-  unfold sSup
-  unfold hasNClique
-  unfold Nat.instSupSetNat
   sorry
 
 /- Maybe can redefine this using cliqueSet -/
 
+
+
+
+theorem faveExampleG : CliqueNumber G = 2 := by
+  unfold CliqueNumber
+  apply equivCliqueNumber
+  unfold hasNClique
+  · use {0,1}
+    apply IsNClique.mk
+    unfold IsClique
+    unfold G
+    aesop_graph
+    norm_num
+    
+  · norm_num
+    unfold hasNClique
+    rw [@not_exists]
+    intro t
+    intro f
+    cases t with
+    | mk val nodup => interval_cases val
 
 lemma minuseqrewrite {n : ℕ} {v w : ZMod n} : (v - w = 1) → (v = 1 + w) := by
   intros vminuseq
@@ -174,8 +191,8 @@ lemma one_one_to_minus_two {n : ℕ} {x y z : ZMod n} : (x - y = 1) → (z - x =
   rw [← @eq_neg_add_iff_add_eq]
   rw [@neg_sub]
   symm
-  rwa [<- sub_eq_add_neg]
-
+  rwa [<- sub_eq_add_neg] 
+    
 
 def cycle (n : ℕ) : (SimpleGraph (ZMod n)) :=
   SimpleGraph.fromRel (λ x y => x-y = 1)
@@ -186,8 +203,8 @@ lemma four_gt_one (n : ℕ) (h : Fact (4 ≤ n)) : Fact (1 < n) := by
   refine Nat.succ_le_iff.mp ?_
   norm_num
   linarith
-
-theorem neg_two_ne_one {n : ℕ} (h : 3 < n) : (-2 : ZMod n) ≠ 1 := by
+  
+lemma neg_two_ne_one {n : ℕ} (h : 3 < n) : (-2 : ZMod n) ≠ 1 := by
   rw[ne_eq, eq_comm, eq_neg_iff_add_eq_zero, add_comm, two_add_one_eq_three]
   contrapose! h
   apply Nat.le_of_dvd zero_lt_three
@@ -207,11 +224,11 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
     rw [@Set.mem_def]
     unfold nonunits
     rw [@Set.setOf_app_iff]
-    have g : Fact (4 ≤ n) := by exact { out := h }
+    have g : Fact (4 ≤ n) := by exact { out := h } 
     have h' : Nontrivial (ZMod n) := by have g' := four_gt_one n ; have g'' := g' g; exact ZMod.nontrivial n;
     exact not_isUnit_zero
 
-
+    
   · norm_num
     unfold hasNClique
     rw [@not_exists]
@@ -274,10 +291,10 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
                             | inl h3 => have h4 := one_one_to_minus_two h1 h2
                                         rw [h4] at h3
                                         revert h3
-                                        rw [imp_false]
+                                        rw[imp_false]
                                         rw [<- ne_eq]
                                         have h' := Nat.succ_le_iff.mp h
-                                        exact neg_two_ne_one h'
+                                        exact neg_two_ne_one h'                                       
 
                             | inr h3 => have h2' := minuseqrewrite h2
                                         have h3' := minuseqrewrite h3
@@ -308,10 +325,10 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
                             | inr h3 => have h4 := one_one_to_minus_two h1 h3
                                         rw [h4] at h2
                                         revert h2
-                                        rw [imp_false]
+                                        rw[imp_false]
                                         rw [<- ne_eq]
                                         have h' := Nat.succ_le_iff.mp h
-                                        exact neg_two_ne_one h'
+                                        exact neg_two_ne_one h' 
                 | inr h2 => revert f3
                             unfold SimpleGraph.Adj
                             unfold cycle
@@ -331,3 +348,65 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
                                         have h3'' := add_left_cancel h3'
                                         revert h3''
                                         exact fun h3'' => f11 h3''
+    
+
+def CompleteG (n : ℕ) : SimpleGraph (ZMod n) :=
+  SimpleGraph.fromRel (λ x y => x ≠ y)
+
+theorem CompleteCliqueNumberIsN (n : ℕ) (h : 1 < n) : CliqueNumber (CompleteG n) = n := by
+  unfold CliqueNumber
+  apply equivCliqueNumber
+  unfold hasNClique
+  · use ZMod n
+    apply IsNClique.mk
+    unfold IsClique
+    unfold CompleteG
+    aesop_graph
+
+  · unfold hasNClique
+    rw [@not_exists]
+    intro S
+    rw [@isNClique_iff]
+    intro f
+    cases f with
+    | intro fl fr =>
+    have S' := Finset.attach S
+
+    --have sizeofZMod := ZMod.card n
+    have S' := Finset.card_le_of_subset S
+
+def EmptyG (n : ℕ)  : SimpleGraph (ZMod n) :=
+  SimpleGraph.fromRel (λ _ _  => false)
+
+theorem EmptyCliqueNumberIsOne (n : ℕ) : CliqueNumber (EmptyG n) = 1 := by
+  unfold CliqueNumber
+  apply equivCliqueNumber
+  unfold hasNClique
+  · use {0}
+    apply IsNClique.mk
+    unfold IsClique
+    norm_num
+    norm_num
+  · norm_num 
+    unfold hasNClique
+    rw [@not_exists]
+    intro S
+    rw [@isNClique_iff]
+    intro f
+    cases f with
+    | intro fl fr =>
+    revert fl
+    unfold IsClique
+    unfold EmptyG
+    intro fl
+    simp_all
+    unfold Set.Pairwise at fl
+    aesop
+    rw [@Finset.card_eq_two] at fr
+    cases fr with
+    | intro x fr =>
+    cases fr with
+    | intro y fr =>
+    cases fr with
+    | intro fr1 fr2 =>
+    aesop
