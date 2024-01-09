@@ -102,7 +102,6 @@ theorem ex22 : F.IsInduced := by
   unfold SimpleGraph.Adj
   simp
   intros v w
-  sorry
 
   
 
@@ -353,6 +352,9 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
 def CompleteG (n : ℕ) : SimpleGraph (ZMod n) :=
   SimpleGraph.fromRel (λ x y => x ≠ y)
 
+lemma Finset_imp_card_le_card (n : ℕ) (S : Finset (ZMod n)) : S ⊆ ZMod n := by
+  sorry
+
 theorem CompleteCliqueNumberIsN (n : ℕ) (h : 1 < n) : CliqueNumber (CompleteG n) = n := by
   unfold CliqueNumber
   apply equivCliqueNumber
@@ -370,10 +372,11 @@ theorem CompleteCliqueNumberIsN (n : ℕ) (h : 1 < n) : CliqueNumber (CompleteG 
     intro f
     cases f with
     | intro fl fr =>
-    have S' := Finset.attach S
-
-    --have sizeofZMod := ZMod.card n
-    have S' := Finset.card_le_of_subset S
+    have sizeofZMod := ZMod.card n
+    have S' := Finset_imp_card_le_card n S
+    have S'' := Finset.card_le_card S'
+    rw [fr] at S''
+    rw [sizeofZMod] at S''
 
 def EmptyG (n : ℕ)  : SimpleGraph (ZMod n) :=
   SimpleGraph.fromRel (λ _ _  => false)
@@ -410,3 +413,69 @@ theorem EmptyCliqueNumberIsOne (n : ℕ) : CliqueNumber (EmptyG n) = 1 := by
     cases fr with
     | intro fr1 fr2 =>
     aesop
+
+def isEmpty {V : Type} (G : SimpleGraph V) : Prop :=
+  ∀ u v : V, ¬ G.Adj u v
+
+--identical other than working for subgraphs, not currently using this but may be useful to have around
+def isEmpty' {V : Type} {G : SimpleGraph V} (H : Subgraph G): Prop :=
+  ∀ u v : H.verts, ¬ H.Adj u v
+
+def isInducedSubgraph {V : Type} (H : SimpleGraph V) (H' : Subgraph H) : Prop :=
+  ∀ {v w : V}, v ∈ H'.verts → w ∈ H'.verts → H.Adj v w → H'.Adj v w
+
+def coe {V : Type}{G : SimpleGraph V}(H : Subgraph G) : SimpleGraph H.verts where
+  Adj v w := H.Adj v w
+  symm _ _ h := H.symm h
+  loopless v h := loopless G v (H.adj_sub h)
+
+def isPerfect {V : Type} (G : SimpleGraph V) : Prop :=
+  ∀ H : Subgraph G, isInducedSubgraph G H → (coe H).chromaticNumber = CliqueNumber (coe H)
+
+theorem emptyHereditary {V : Type} (G : SimpleGraph V)(H : Subgraph G): isEmpty G → isEmpty H.coe  := by
+  sorry
+
+theorem chromaticNumberAltDef {V : Type} (G : SimpleGraph V) (k : ℕ) (colorable : G.Colorable k) (notColorable : ¬ G.Colorable (k-1)) : G.chromaticNumber = k := by
+    /-
+    unfold SimpleGraph.chromaticNumber
+    refine (Nat.le_antisymm ?h₁ ?h₂).symm
+    · refine (le_csInf_iff'' ?h₁.ne).mpr ?h₁.a;
+        · exact SimpleGraph.colorable_set_nonempty_of_colorable colorable
+      intros b bColorable
+    -/
+    sorry
+theorem emptyChiOne (n : ℕ) : SimpleGraph.chromaticNumber (EmptyG n) = 1 := by
+  apply chromaticNumberAltDef
+  unfold EmptyG
+  simp
+  unfold Colorable
+  refine Nonempty.intro ?colorable.val
+  sorry
+ -- have col := SimpleGraph.Coloring.mk (λ v : ZMod n => (0 : Fin 1)) (by 
+  sorry
+
+theorem equivIsPerfect {V : Type}
+  (p : {U : Type} → SimpleGraph U → Prop)
+  (G : SimpleGraph V) 
+  (g_satisfies_p : p G) 
+  (p_is_hereditary : ∀ H : Subgraph G, p H.coe)
+  (g_min_perfect : CliqueNumber G = G.chromaticNumber) : isPerfect G := by
+  sorry
+
+theorem EmptyIsPerfect (n : ℕ) : isPerfect (EmptyG n) := by
+  apply equivIsPerfect isEmpty
+  unfold isEmpty
+  unfold EmptyG
+  aesop
+  have h := emptyHereditary (EmptyG n)
+  intros H
+  have h' := h H
+  have h'' : isEmpty (EmptyG n) := by unfold isEmpty; unfold EmptyG; aesop;
+  have hIsEmptyPrime := h' h''
+  unfold isEmpty' at h''
+  exact hIsEmptyPrime
+  rw [emptyChiOne]
+  rw [EmptyCliqueNumberIsOne]
+
+
+  
