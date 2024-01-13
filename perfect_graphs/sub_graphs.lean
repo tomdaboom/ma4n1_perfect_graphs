@@ -88,3 +88,16 @@ example : CompleteG 3 ↪g CompleteG5 where
       exact ZMod.cast_injective_of_lt (by norm_num) h
 
     done
+
+#check CompleteG3Embed
+
+theorem G3isSubgraphofG5 : CompleteG3Embed ≤ CompleteG5 := by
+  unfold CompleteG3onNat CompleteG5onNat CompleteGonNat
+  rintro x y ⟨xy, ⟨-, x3, y3⟩ | ⟨-, y3, x3⟩⟩
+  all_goals
+    have x5 : x < 5 := by linarith
+    have y5 : y < 5 := by linarith
+    aesop
+  done
+
+
