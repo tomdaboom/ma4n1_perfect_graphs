@@ -33,6 +33,7 @@ def isInducedSubgraph {V : Type} (H : SimpleGraph V) (H' : Subgraph H) : Prop :=
 
 
 
+
 #check Fin 5
 
 def isInducedSimpleGraph {V : Type} (H : SimpleGraph V) (H' : SimpleGraph V) : Prop :=
