@@ -348,8 +348,8 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
 variable (n : ℕ) [NeZero n] in
 #check (Finset.univ : Finset (ZMod n))
 
-def CompleteG (n : ℕ) : SimpleGraph (ZMod n) :=
-  SimpleGraph.fromRel (λ x y => x ≠ y)
+def CompleteG (n : ℕ) : SimpleGraph (Fin n) := completeGraph (Fin n)
+  --SimpleGraph.fromRel (λ x y => x ≠ y)
 
 theorem CompleteCliqueNumberIsN (n : ℕ) (h : NeZero n) : CliqueNumber (CompleteG n) = n := by
   unfold CliqueNumber
@@ -360,9 +360,11 @@ theorem CompleteCliqueNumberIsN (n : ℕ) (h : NeZero n) : CliqueNumber (Complet
     unfold IsClique
     unfold CompleteG
     aesop_graph
-    have sizeofZMod := ZMod.card n
+    -- have sizeofZMod := ZMod.card n
     rw [Finset.card_univ]
-    exact sizeofZMod
+    exact Fintype.card_fin n
+    -- exact sizeofZMod
+    
 
   · unfold hasNClique
     rw [@not_exists]
@@ -371,19 +373,22 @@ theorem CompleteCliqueNumberIsN (n : ℕ) (h : NeZero n) : CliqueNumber (Complet
     intro f
     cases f with
     | intro fl fr =>
-    have sizeofZMod := ZMod.card n
+    -- have sizeofZMod := ZMod.card n
     have subset_of_univ := Finset.subset_univ S
     have S'' := Finset.card_le_card subset_of_univ
     rw [Finset.card_univ] at S''
     rw [fr] at S''
-    rw [sizeofZMod] at S''
+    rw [Fintype.card_fin n] at S''
     contrapose! S''
     norm_num
 
-def EmptyG (n : ℕ)  : SimpleGraph (ZMod n) :=
-  SimpleGraph.fromRel (λ _ _  => false)
+/- def EmptyG' (n : ℕ)  : SimpleGraph (ZMod n) :=
+  SimpleGraph.fromRel (λ _ _  => false) -/
 
-theorem EmptyCliqueNumberIsOne (n : ℕ) : CliqueNumber (EmptyG n) = 1 := by
+def EmptyG (n : ℕ) : SimpleGraph (Fin n) := emptyGraph (Fin n)
+ 
+
+theorem EmptyCliqueNumberIsOne (n : ℕ) (h : NeZero n) : CliqueNumber (EmptyG n) = 1 := by
   unfold CliqueNumber
   apply equivCliqueNumber
   unfold hasNClique
@@ -405,7 +410,7 @@ theorem EmptyCliqueNumberIsOne (n : ℕ) : CliqueNumber (EmptyG n) = 1 := by
     unfold EmptyG
     intro fl
     simp_all
-    unfold Set.Pairwise at fl
+    unfold Set.Subsingleton at fl
     aesop
     rw [@Finset.card_eq_two] at fr
     cases fr with
@@ -418,6 +423,48 @@ theorem EmptyCliqueNumberIsOne (n : ℕ) : CliqueNumber (EmptyG n) = 1 := by
 
 def isEmpty {V : Type} (G : SimpleGraph V) : Prop :=
   ∀ u v : V, ¬ G.Adj u v
+
+
+
+theorem empty_is_empty (n : ℕ) : isEmpty (EmptyG n) := by
+  unfold isEmpty
+  unfold EmptyG
+  aesop
+
+theorem EmptyOne' {V : Type} [h' : Finite V] [h : Nonempty V] (G : SimpleGraph V) (g_is_empty : isEmpty G): CliqueNumber G = 1 := by
+  unfold CliqueNumber
+  apply equivCliqueNumber
+  unfold hasNClique
+  · use {h.some}
+    apply IsNClique.mk
+    unfold IsClique
+    norm_num
+    norm_num
+  · norm_num 
+    unfold hasNClique
+    rw [@not_exists]
+    intro S
+    rw [@isNClique_iff]
+    intro f
+    cases f with
+    | intro fl fr =>
+    revert fl
+    unfold IsClique
+    unfold isEmpty at g_is_empty
+    intro fl
+    unfold Set.Pairwise at fl
+    aesop
+    rw [@Finset.card_eq_two] at fr
+    cases fr with
+    | intro x fr =>
+    cases fr with
+    | intro y fr =>
+    cases fr with
+    | intro fr1 fr2 =>
+    aesop
+
+theorem equivIsEmpty {V : Type} [finV : Fintype V] (n : ℕ) (n_nonzero : NeZero n) (Vcard : Fintype.card V = n) (G : SimpleGraph V) (h : isEmpty G) : 1=1 := by
+ sorry
 
 def isComplete {V : Type} (G : SimpleGraph V) : Prop :=
   ∀ u v : V, ¬ u = v -> G.Adj u v
@@ -452,15 +499,28 @@ theorem chromaticNumberAltDef {V : Type} (G : SimpleGraph V) (k : ℕ) (colorabl
       intros b bColorable
     -/
     sorry
-theorem emptyChiOne (n : ℕ) : SimpleGraph.chromaticNumber (EmptyG n) = 1 := by
+
+#check emptyGraph
+
+/- theorem emptyChiOne' (n : ℕ) : SimpleGraph.chromaticNumber (EmptyG n) = 1 := by
   apply chromaticNumberAltDef
-  unfold EmptyG
-  simp
+  --unfold EmptyG
   unfold Colorable
   refine Nonempty.intro ?colorable.val
-  sorry
- -- have col := SimpleGraph.Coloring.mk (λ v : ZMod n => (0 : Fin 1)) (by 
-  sorry
+  --sorry
+  exact SimpleGraph.Coloring.mk (G := EmptyG n) (λ v : ZMod n => (0 : Fin 1)) (by 
+    intro v w
+    unfold EmptyG
+    simp only [fromRel_adj, ne_eq, or_self, and_false, not_true_eq_false, IsEmpty.forall_iff]
+  )
+  sorry -/
+  
+theorem emptyChiOne (n : ℕ) (h : NeZero n) : SimpleGraph.chromaticNumber (EmptyG n) = 1 := by
+  unfold EmptyG
+  simp only [SimpleGraph.emptyGraph_eq_bot]
+  exact SimpleGraph.chromaticNumber_bot
+  
+  
 
 def min_perf {U : Type} (G : SimpleGraph U) : Prop :=
   G.chromaticNumber = CliqueNumber G
@@ -468,18 +528,37 @@ def min_perf {U : Type} (G : SimpleGraph U) : Prop :=
 theorem equivIsPerfect {V : Type}
   (p : {U : Type} → SimpleGraph U → Prop)
   (G : SimpleGraph V) 
+  (g_has_p : p G)
   (p_is_hereditary : ∀ H : Subgraph G, isInducedSubgraph G H -> p G -> p H.coe)
-  (g_min_perfect : min_perf G) : isPerfect G := by
+  (g_min_perfect : {W : Type} -> ∀ L : SimpleGraph W, p L -> min_perf L) 
+  : isPerfect G := by
   unfold isPerfect
   intro H
   intro induced
   have p_H := p_is_hereditary H induced
-  have min_perf_h := p_H g_min_perfect
-  sorry
+  have min_perf_h := p_H g_has_p
+  have min_perf2_h := g_min_perfect H.coe min_perf_h
+  unfold min_perf at min_perf2_h
+  exact min_perf2_h
 
+theorem EmptyIsPerfect' (n : ℕ) : isPerfect (EmptyG n) := by
+  unfold isPerfect
+  intro H
+  intro induced
+  
+theorem EmptyIsPerfect'' {V : Type}(G: SimpleGraph V)(empty : isEmpty G) : isPerfect (G) := by
+  unfold isPerfect
+  intro H
+  intro induced
+
+  apply emptyHereditary at empty
+  
 
 theorem EmptyIsPerfect (n : ℕ) : isPerfect (EmptyG n) := by
   apply equivIsPerfect isEmpty
+  unfold isEmpty
+  unfold EmptyG
+  aesop
   unfold EmptyG
   intro H
   have h := emptyHereditary (EmptyG n)
@@ -489,21 +568,25 @@ theorem EmptyIsPerfect (n : ℕ) : isPerfect (EmptyG n) := by
   intros f1 f2
   exact hIsEmpty
   unfold min_perf
+  intro W
+  intro L
+  unfold isEmpty
+  intro f
+  apply chromaticNumberAltDef
+  intro f
   rw [emptyChiOne]
   rw [EmptyCliqueNumberIsOne]
   rfl
 
 /- ---------- -/
 
-theorem completeChiOne (n : ℕ) : SimpleGraph.chromaticNumber (CompleteG n) = n := by
-  apply chromaticNumberAltDef
+theorem completeChiN (n : ℕ) : SimpleGraph.chromaticNumber (CompleteG n) = n := by
   unfold CompleteG
-  simp
-  unfold Colorable
-  refine Nonempty.intro ?colorable.val
-  sorry
- -- have col := SimpleGraph.Coloring.mk (λ v : ZMod n => (0 : Fin 1)) (by 
-  sorry
+  simp only [completeGraph_eq_top]
+  rw [@chromaticNumber_top]
+  simp only [Fintype.card_fin]
+
+
 
 theorem CompleteIsPerfect (n : ℕ) (n_not_zero : NeZero n) : isPerfect (CompleteG n) := by
   apply equivIsPerfect isComplete
@@ -517,6 +600,6 @@ theorem CompleteIsPerfect (n : ℕ) (n_not_zero : NeZero n) : isPerfect (Complet
   intro F
   exact hIsComplete
   unfold min_perf
-  rw [completeChiOne]
+  rw [completeChiN]
   rw [CompleteCliqueNumberIsN]
   exact n_not_zero
