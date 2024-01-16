@@ -431,7 +431,7 @@ theorem empty_is_empty (n : ℕ) : isEmpty (EmptyG n) := by
   unfold EmptyG
   aesop
 
-theorem EmptyOne' {V : Type} [h' : Finite V] [h : Nonempty V] (G : SimpleGraph V) (g_is_empty : isEmpty G): CliqueNumber G = 1 := by
+theorem EmptyOne' {V : Type} [h' : Fintype V] [h : Nonempty V] [DecidableEq V] : CliqueNumber (emptyGraph V) = 1 := by
   unfold CliqueNumber
   apply equivCliqueNumber
   unfold hasNClique
@@ -450,7 +450,6 @@ theorem EmptyOne' {V : Type} [h' : Finite V] [h : Nonempty V] (G : SimpleGraph V
     | intro fl fr =>
     revert fl
     unfold IsClique
-    unfold isEmpty at g_is_empty
     intro fl
     unfold Set.Pairwise at fl
     aesop
@@ -463,8 +462,27 @@ theorem EmptyOne' {V : Type} [h' : Finite V] [h : Nonempty V] (G : SimpleGraph V
     | intro fr1 fr2 =>
     aesop
 
-theorem equivIsEmpty {V : Type} [finV : Fintype V] (n : ℕ) (n_nonzero : NeZero n) (Vcard : Fintype.card V = n) (G : SimpleGraph V) (h : isEmpty G) : 1=1 := by
- sorry
+theorem equivIsEmpty {V : Type} 
+  [finV : Fintype V] [nemp : Nonempty V] 
+  (G : SimpleGraph V) (h : isEmpty G) 
+  : G = (emptyGraph V) := by
+  unfold emptyGraph
+  unfold isEmpty at h
+  aesop
+ /- refine { toEquiv := ?toEquiv, map_rel_iff' := ?map_rel_iff' }
+  exact Fintype.equivFin V
+  
+  intros a b
+  unfold SimpleGraph.Adj
+  apply Iff.intro
+
+  intros h'
+  exact h'.elim
+
+  intros h'
+  exact h a b h' -/
+
+
 
 def isComplete {V : Type} (G : SimpleGraph V) : Prop :=
   ∀ u v : V, ¬ u = v -> G.Adj u v
@@ -541,10 +559,15 @@ theorem equivIsPerfect {V : Type}
   unfold min_perf at min_perf2_h
   exact min_perf2_h
 
-theorem EmptyIsPerfect' (n : ℕ) : isPerfect (EmptyG n) := by
+theorem EmptyIsPerfect' {V : Type} [finV : Fintype V] [nemp : Nonempty V]  : isPerfect (emptyGraph V) := by
   unfold isPerfect
   intro H
   intro induced
+  have emptyG2 : isEmpty (emptyGraph V) := by unfold isEmpty; unfold emptyGraph; aesop;
+  have empty_is := emptyHereditary (emptyGraph V)
+  have emptyH := empty_is H
+  have emptyH2 := emptyH emptyG2
+  have H_is_empty_G := equivIsEmpty H emptyH2
   
 theorem EmptyIsPerfect'' {V : Type}(G: SimpleGraph V)(empty : isEmpty G) : isPerfect (G) := by
   unfold isPerfect
@@ -554,7 +577,7 @@ theorem EmptyIsPerfect'' {V : Type}(G: SimpleGraph V)(empty : isEmpty G) : isPer
   apply emptyHereditary at empty
   
 
-theorem EmptyIsPerfect (n : ℕ) : isPerfect (EmptyG n) := by
+theorem EmptyIsPerfect (n : ℕ) (nemp : NeZero n) : isPerfect (EmptyG n) := by
   apply equivIsPerfect isEmpty
   unfold isEmpty
   unfold EmptyG
@@ -570,7 +593,11 @@ theorem EmptyIsPerfect (n : ℕ) : isPerfect (EmptyG n) := by
   unfold min_perf
   intro W
   intro L
-  unfold isEmpty
+  intro f
+  have f' := equivIsEmpty L f
+  rw [EmptyOne']
+  rw [emptyChiOne]
+  rw [f'] 
   intro f
   apply chromaticNumberAltDef
   intro f
