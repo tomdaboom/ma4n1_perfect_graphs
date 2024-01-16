@@ -56,6 +56,8 @@ def isPerfect {V : Type} (G : SimpleGraph V) : Prop :=
 
 
 
+
+
 --DEALING WITH CYCLES - CURRENTLY IN PROGRESS
 def cycle (n : ℕ) : (SimpleGraph (Fin n)) :=
   SimpleGraph.fromRel (λ x y => (x-y : ℕ) = 1)
@@ -67,6 +69,11 @@ def hasNCycle' {m : ℕ} (G : SimpleGraph (Fin m)) (n : ℕ) : Prop :=
 
 def hasNCycle {V : Type} (G : SimpleGraph V) (n : ℕ) : Prop :=
   isInducedSubgraph G (G.toSubgraph (cycle n))
+
+
+
+def hasNCycle1 {V : Type} (G : SimpleGraph V) (n : ℕ) : Prop :=
+  ∃ H : Subgraph G, ((H.coe).Iso (cycle n)) ∧ isInducedSubgraph G H
 
 def hasOddHole {V : Type} (G : SimpleGraph V) : Prop :=
   ∃ n : ℕ, hasNCycle G (2*n+5) --odd cycle of length ≥ 5, using that 0 ∈ ℕ in Lean
