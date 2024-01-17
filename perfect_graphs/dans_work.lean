@@ -326,14 +326,12 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
                                         revert h3''
                                         exact fun h3'' => f11 h3''
     
-variable (n : ℕ) [NeZero n] in
-#check (Finset.univ : Finset (ZMod n))
+
 
 def CompleteG (n : ℕ) : SimpleGraph (Fin n) := completeGraph (Fin n)
   --SimpleGraph.fromRel (λ x y => x ≠ y)
 
 theorem CompleteN' {V : Type} [h' : Fintype V] [h : Nonempty V] [deq : DecidableEq V] : CliqueNumber (completeGraph V) = (Finset.univ (α := V)).card := by
-  unfold CliqueNumber
   apply equivCliqueNumber
   unfold hasNClique
   · use Finset.univ
@@ -357,6 +355,7 @@ theorem CompleteN' {V : Type} [h' : Fintype V] [h : Nonempty V] [deq : Decidable
     contrapose! S''
     norm_num 
 
+/-
 theorem CompleteCliqueNumberIsN (n : ℕ) (h : NeZero n) : CliqueNumber (CompleteG n) = n := by
   unfold CliqueNumber
   apply equivCliqueNumber
@@ -387,13 +386,14 @@ theorem CompleteCliqueNumberIsN (n : ℕ) (h : NeZero n) : CliqueNumber (Complet
     rw [Fintype.card_fin n] at S''
     contrapose! S''
     norm_num
+-/
 
 /- def EmptyG' (n : ℕ)  : SimpleGraph (ZMod n) :=
   SimpleGraph.fromRel (λ _ _  => false) -/
 
 def EmptyG (n : ℕ) : SimpleGraph (Fin n) := emptyGraph (Fin n)
  
-
+/-
 theorem EmptyCliqueNumberIsOne (n : ℕ) (h : NeZero n) : CliqueNumber (EmptyG n) = 1 := by
   unfold CliqueNumber
   apply equivCliqueNumber
@@ -426,6 +426,7 @@ theorem EmptyCliqueNumberIsOne (n : ℕ) (h : NeZero n) : CliqueNumber (EmptyG n
     cases fr with
     | intro fr1 fr2 =>
     aesop
+-/
 
 def isEmpty {V : Type} (G : SimpleGraph V) : Prop :=
   ∀ u v : V, ¬ G.Adj u v
@@ -438,7 +439,6 @@ theorem empty_is_empty (n : ℕ) : isEmpty (EmptyG n) := by
   aesop
 
 theorem EmptyOne' {V : Type} /- [h' : Fintype V] -/ [h : Nonempty V] [DecidableEq V]  : CliqueNumber (emptyGraph V) = 1 := by
-  unfold CliqueNumber
   apply equivCliqueNumber
   unfold hasNClique
   · use {h.some}
@@ -517,7 +517,36 @@ def coe {V : Type}{G : SimpleGraph V}(H : Subgraph G) : SimpleGraph H.verts wher
 
 def isPerfect {V : Type} (G : SimpleGraph V) : Prop :=
   (∀ H : Subgraph G, isInducedSubgraph G H → (H.coe).chromaticNumber = CliqueNumber (H.coe) ∨ (H.verts = ∅)) 
+
+theorem emptyVertsClique (G : SimpleGraph Empty) : CliqueNumber G = 0 := by
+ apply equivCliqueNumber
+ ·unfold hasNClique
+  use ∅
+  aesop  
+ ·norm_num
+  unfold hasNClique
+  rw [@not_exists]
+  intro t
+  intro f
+  rw [@isNClique_iff] at f
+  cases f with
+  | intro f1 f2 => 
+  rw [@Finset.card_eq_one] at f2 
+  aesop
+
+theorem emptyVertsChrom (G : SimpleGraph Empty) : G.chromaticNumber = 0 := by
+  rw [@chromaticNumber_eq_zero_of_isempty]
+
+theorem minperfEmptyVerts (G : SimpleGraph Empty) : G.chromaticNumber = CliqueNumber G := by
+  rw [emptyVertsChrom]
+  rw [emptyVertsClique]
+  rfl
+
+/- These three theorems above, combined with the fact that the graph on no vertices has no subgraphs,
+ justify our inclusion of the "∨ H.verts = ∅" clause in our definition of a perfect graph. -/
+
   
+
 
 theorem emptyHereditary {V : Type} (G : SimpleGraph V)(H : Subgraph G): isEmpty G → isEmpty H.coe  := by
   sorry
@@ -629,13 +658,13 @@ theorem EmptyIsPerfect' {V : Type} /- [finV : Fintype V] -/ [nemp : Nonempty V] 
 
 /- ---------- -/
 
-theorem completeChiN {V : Type} [h' : Fintype V] [h : Nonempty V] [deq : DecidableEq V] : SimpleGraph.chromaticNumber (completeGraph V) = (Finset.univ (α := V)).card:= by
+theorem completeChiN {V : Type} [h' : Fintype V] : SimpleGraph.chromaticNumber (completeGraph V) = (Finset.univ (α := V)).card:= by
   simp only [completeGraph_eq_top] 
   rw [@chromaticNumber_top]
   rfl
 
 
-
+/-
 theorem CompleteIsPerfect (n : ℕ) (n_not_zero : NeZero n) : isPerfect (CompleteG n) := by
   apply equivIsPerfect isComplete
   unfold CompleteG
@@ -651,8 +680,10 @@ theorem CompleteIsPerfect (n : ℕ) (n_not_zero : NeZero n) : isPerfect (Complet
   rw [completeChiN]
   rw [CompleteCliqueNumberIsN]
   exact n_not_zero
+-/
 
 theorem CompleteIsPerfect' {V : Type}  [finV : Fintype V]  [nemp : Nonempty V] [deq : DecidableEq V]  : isPerfect (completeGraph V) := by
+  classical
   unfold isPerfect
   intro H
   intro induced
@@ -666,7 +697,6 @@ theorem CompleteIsPerfect' {V : Type}  [finV : Fintype V]  [nemp : Nonempty V] [
   · left
     rw [CompleteN']
     rw [completeChiN]
-    rfl
   · right
     rw [@Set.not_nonempty_iff_eq_empty'] at h234 
     exact h234
