@@ -77,6 +77,7 @@ theorem emptyVertsChrom (G : SimpleGraph Empty) : G.chromaticNumber = 0 := by
 theorem minperfEmptyVerts (G : SimpleGraph Empty) : G.chromaticNumber = CliqueNumber G := by
   rw [emptyVertsChrom]
   rw [emptyVertsClique]
+  rfl
 
 /- These three theorems above, combined with the fact that the graph on no vertices has no subgraphs,
  justify our inclusion of the "∨ H.verts = ∅" clause in our definition of a perfect graph. -/
@@ -101,7 +102,7 @@ theorem edgeInGraphInInducedSubgraph' {V : Type}(G : SimpleGraph V)(H : Subgraph
   simp only [Subtype.coe_prop]
   exact Subtype.mem w
 
---essentially a rewritten version of PGIsInducedSubgraph, but useful for proofs
+
  lemma edgeInGraphInInducedSubgraph {V : Type}(G : SimpleGraph V)(H : Subgraph G)(h: isInducedSubgraph G H): ∀ u v : H.verts , ( ¬u = v → G.Adj u v) → ( ¬u = v → H.Adj u v)
 := by
   intro v w
@@ -128,8 +129,8 @@ lemma equivIsComplete {V : Type}
   unfold isComplete at h
   aesop
 
---TBD: fix? also rename
-theorem CompleteN' {V : Type} [h' : Fintype V] [h : Nonempty V] [deq : DecidableEq V] : CliqueNumber (completeGraph V) = (Finset.univ (α := V)).card := by
+--TBD: fix? 
+theorem CompleteCliqueN {V : Type} [h' : Fintype V] [h : Nonempty V] [deq : DecidableEq V] : CliqueNumber (completeGraph V) = (Finset.univ (α := V)).card := by
   apply equivCliqueNumber
   unfold hasNClique
   · use Finset.univ
@@ -158,7 +159,7 @@ theorem completeChiN {V : Type} [h' : Fintype V] : SimpleGraph.chromaticNumber (
   rw [@chromaticNumber_top]
   rfl
 
-theorem CompleteIsPerfect' {V : Type}  [finV : Fintype V]  [nemp : Nonempty V] [deq : DecidableEq V]  : isPerfect (completeGraph V) := by
+theorem CompleteIsPerfect {V : Type}  [finV : Fintype V]  [nemp : Nonempty V] [deq : DecidableEq V]  : isPerfect (completeGraph V) := by
   classical
   unfold isPerfect
   intro H
@@ -171,7 +172,7 @@ theorem CompleteIsPerfect' {V : Type}  [finV : Fintype V]  [nemp : Nonempty V] [
   rw [H_is_complete_G]
   by_cases h234 : Nonempty H.verts
   · left
-    rw [CompleteN']
+    rw [CompleteCliqueN]
     rw [completeChiN]
   · right
     rw [@Set.not_nonempty_iff_eq_empty'] at h234
@@ -204,7 +205,7 @@ theorem equivIsEmpty {V : Type}
   unfold isEmpty at h
   aesop
 
-theorem EmptyOne' {V : Type}[h : Nonempty V] [DecidableEq V]  : CliqueNumber (emptyGraph V) = 1 := by
+theorem EmptyCliqueOne {V : Type}[h : Nonempty V] [DecidableEq V]  : CliqueNumber (emptyGraph V) = 1 := by
   apply equivCliqueNumber
   unfold hasNClique
   · use {h.some}
@@ -238,7 +239,7 @@ theorem emptyChiOne {V : Type} [Nonempty V] : SimpleGraph.chromaticNumber (empty
   simp only [emptyGraph_eq_bot]
   exact SimpleGraph.chromaticNumber_bot
 
-theorem EmptyIsPerfect' {V : Type} [nemp : Nonempty V] [deq : DecidableEq V]  : isPerfect (emptyGraph V) := by
+theorem EmptyIsPerfect {V : Type} [nemp : Nonempty V] [deq : DecidableEq V]  : isPerfect (emptyGraph V) := by
   unfold isPerfect
   intro H
   intro induced
@@ -250,12 +251,244 @@ theorem EmptyIsPerfect' {V : Type} [nemp : Nonempty V] [deq : DecidableEq V]  : 
   rw [H_is_empty_G]
   by_cases h234 : Nonempty H.verts
   left
-  rw [EmptyOne']
+  rw [EmptyCliqueOne]
   rw [emptyChiOne]
   rfl
   right
   rw [@Set.not_nonempty_iff_eq_empty'] at h234
   exact h234
 
+--------------------------------------------------------------------------
+--SECTION: CYCLES
+
+def cycle (n : ℕ) : (SimpleGraph (ZMod n)) :=
+  SimpleGraph.fromRel (λ x y => x-y = 1)
+
+lemma minuseqrewrite {n : ℕ} {v w : ZMod n} : (v - w = 1) → (v = 1 + w) := by
+  intros vminuseq
+  rw [← vminuseq]
+  simp only [sub_add_cancel]
+
+lemma one_one_to_two {n : ℕ} {x y z : ZMod n} : (x - y = 1) → (z - x = 1) → (z - y = 2) := by
+  intros xminy zminx
+  have yplusone := minuseqrewrite xminy
+  rw [yplusone] at zminx
+  rw [add_comm] at zminx
+  rw[sub_add_eq_sub_sub] at zminx
+  rw [<- one_add_one_eq_two]
+  rw [← zminx]
+  exact eq_add_of_sub_eq (congrArg (HSub.hSub (z - y)) zminx)
+
+lemma one_one_to_minus_two {n : ℕ} {x y z : ZMod n} : (x - y = 1) → (z - x = 1) → (y - z = -2) := by
+  intros xminy zminx
+  have yplusone := minuseqrewrite xminy
+  rw [yplusone] at zminx
+  rw [add_comm] at zminx
+  rw[sub_add_eq_sub_sub] at zminx
+  rw [<- one_add_one_eq_two]
+  rw [neg_add]
+  rw [@eq_add_neg_iff_add_eq]
+  rw [← @eq_neg_add_iff_add_eq]
+  rw [@neg_sub]
+  symm
+  rwa [<- sub_eq_add_neg] 
+
+lemma four_gt_one (n : ℕ) (h : Fact (4 ≤ n)) : Fact (1 < n) := by
+  have h' := Fact.elim h
+  refine fact_iff.mpr ?_
+  refine Nat.succ_le_iff.mp ?_
+  norm_num
+  linarith
   
+lemma neg_two_ne_one {n : ℕ} (h : 3 < n) : (-2 : ZMod n) ≠ 1 := by
+  rw[ne_eq, eq_comm, eq_neg_iff_add_eq_zero, add_comm, two_add_one_eq_three]
+  contrapose! h
+  apply Nat.le_of_dvd zero_lt_three
+  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 3 n).mp h
+
+theorem chiCycle3 (n : ℕ) (h : Odd n) : (cycle n).chromaticNumber = 3 := by
+  sorry
+
+theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) = 2 := by
+  unfold CliqueNumber
+  apply equivCliqueNumber
+  unfold hasNClique
+  · use {0,1}
+    apply IsNClique.mk
+    unfold IsClique
+    unfold cycle
+    aesop_graph
+    refine Finset.card_pair ?h.card_eq.h
+    refine zero_mem_nonunits.mp ?h.card_eq.h.a
+    rw [@Set.mem_def]
+    unfold nonunits
+    rw [@Set.setOf_app_iff]
+    have g : Fact (4 ≤ n) := by exact { out := h } 
+    have h' : Nontrivial (ZMod n) := by have g' := four_gt_one n ; have g'' := g' g; exact ZMod.nontrivial n;
+    exact not_isUnit_zero    
+  · norm_num
+    unfold hasNClique
+    rw [@not_exists]
+    intro x
+    rw [@is3Clique_iff]
+    rw [@not_exists]
+    intro a
+    rw [@not_exists]
+    intro b
+    rw [@not_exists]
+    intro c
+    intro f
+    cases f with
+    | intro f1 f2 =>
+      cases f2 with
+      | intro f2 f3 =>
+        cases f3 with
+        | intro f3 f4 =>
+    revert f1
+    unfold SimpleGraph.Adj
+    unfold cycle
+    simp
+    intro f11
+    intro f12
+    cases f12 with
+    | inl h1 => revert f2
+                unfold SimpleGraph.Adj
+                unfold cycle
+                simp
+                intro f21
+                intro f22
+                cases f22 with
+                | inl h2 => revert f3
+                            unfold SimpleGraph.Adj
+                            unfold cycle
+                            simp
+                            intro f31
+                            intro f32
+                            cases f32 with
+                            | inl h3 => have h1' := minuseqrewrite h1
+                                        have h2' := minuseqrewrite h2
+                                        rw [h1'] at h2'
+                                        have h2'' := add_left_cancel h2'
+                                        revert h2''
+                                        exact fun h2'' => f31 h2''
+                            | inr h3 => have h1' := minuseqrewrite h1
+                                        have h2' := minuseqrewrite h2
+                                        rw [h1'] at h2'
+                                        have h2'' := add_left_cancel h2'
+                                        revert h2''
+                                        exact fun h2'' => f31 h2''
+
+                | inr h2 => revert f3
+                            unfold SimpleGraph.Adj
+                            unfold cycle
+                            simp
+                            intro f31
+                            intro f32
+                            cases f32 with
+                            | inl h3 => have h4 := one_one_to_minus_two h1 h2
+                                        rw [h4] at h3
+                                        revert h3
+                                        rw[imp_false]
+                                        rw [<- ne_eq]
+                                        have h' := Nat.succ_le_iff.mp h
+                                        exact neg_two_ne_one h'                                       
+
+                            | inr h3 => have h2' := minuseqrewrite h2
+                                        have h3' := minuseqrewrite h3
+                                        rw [h3'] at h2'
+                                        have h2'' := add_left_cancel h2'
+                                        revert h2''
+                                        exact fun h2'' => f11 (id h2''.symm)
+    | inr h1 => revert f2
+                unfold SimpleGraph.Adj
+                unfold cycle
+                simp
+                intro f21
+                intro f22
+                cases f22 with
+                | inl h2 => revert f3
+                            unfold SimpleGraph.Adj
+                            unfold cycle
+                            simp
+                            intro f31
+                            intro f32
+                            cases f32 with
+                            | inl h3 => have h1' := minuseqrewrite h1
+                                        have h3' := minuseqrewrite h3
+                                        rw [h1'] at h3'
+                                        have h3'' := add_left_cancel h3'
+                                        revert h3''
+                                        exact fun h3'' => f21 h3''
+                            | inr h3 => have h4 := one_one_to_minus_two h1 h3
+                                        rw [h4] at h2
+                                        revert h2
+                                        rw[imp_false]
+                                        rw [<- ne_eq]
+                                        have h' := Nat.succ_le_iff.mp h
+                                        exact neg_two_ne_one h' 
+                | inr h2 => revert f3
+                            unfold SimpleGraph.Adj
+                            unfold cycle
+                            simp
+                            intro f31
+                            intro f32
+                            cases f32 with
+                            | inl h3 => have h1' := minuseqrewrite h1
+                                        have h3' := minuseqrewrite h3
+                                        rw [h1'] at h3'
+                                        have h3'' := add_left_cancel h3'
+                                        revert h3''
+                                        exact fun h3'' => f21 h3''
+                            | inr h3 => have h2' := minuseqrewrite h2
+                                        have h3' := minuseqrewrite h3
+                                        rw [h2'] at h3'
+                                        have h3'' := add_left_cancel h3'
+                                        revert h3''
+                                        exact fun h3'' => f11 h3''
+
+--TBD: this proof
+theorem oddCycleNotPerfect (n : ℕ) (h : Odd n) : ¬isPerfect (cycle n) := by
+  unfold isPerfect
+  rw [@not_ball]
+  sorry
+
+--------------------------------------------------------------------------
+--SECTION: PERFECT GRAPH THEOREMS
+def hasNCycle {V : Type} (G : SimpleGraph V) (n : Nat) : Prop :=
+  ∃ u, ∃ p : G.Walk u u, p.IsCycle ∧ p.length = n
+
+def hasOddHole {V : Type} (G : SimpleGraph V) : Prop :=
+  ∃ n : ℕ, hasNCycle G (2*n+5) --odd cycle of length ≥ 5, using that 0 ∈ ℕ in Lean
+
+theorem strongPerfectGraphTheorem {V : Type} (G : SimpleGraph V)
+ : isPerfect G ↔ ¬ hasOddHole G ∧ ¬ hasOddHole Gᶜ := by
+  sorry
+
+--TBD Include example of non-perfect graph and prove using SPGT
+
+theorem weakPerfectGraphTheoremForward {V : Type} (G : SimpleGraph V): isPerfect G → isPerfect (compl G):= by
+  intro h
+  rw [@strongPerfectGraphTheorem]
+  rw [@strongPerfectGraphTheorem] at h
+  refine And.symm ?_
+  rw[compl_compl]
+  apply h
+
+--Prove other direction using Gᶜᶜ = G
+theorem weakPerfectGraphTheoremBackward {V : Type} (G : SimpleGraph V): isPerfect (compl G) → isPerfect (G):= by
+   intro h
+   apply (weakPerfectGraphTheoremForward Gᶜ) at h
+   rw [compl_compl] at h
+   apply h
+
+--Unify both directions into the Weak Perfect Graph Theorem
+theorem weakPerfectGraphTheorem {V : Type} (G : SimpleGraph V) : isPerfect G ↔  isPerfect (compl G)
+:= by
+  refine Iff.symm ((fun {a b} => iff_def.mpr) {
+    left := by apply weakPerfectGraphTheoremBackward
+    right := by apply weakPerfectGraphTheoremForward
+  })
+
+
+
 end PerfectGraphs
