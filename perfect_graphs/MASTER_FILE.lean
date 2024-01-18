@@ -52,7 +52,7 @@ def isInducedSubgraph {V : Type} (H : SimpleGraph V) (H' : Subgraph H) : Prop :=
   ∀ {v w : V}, v ∈ H'.verts → w ∈ H'.verts → H.Adj v w → H'.Adj v w
 
 def isPerfect {V : Type} (G : SimpleGraph V) : Prop :=
-  (∀ H : Subgraph G, isInducedSubgraph G H → (H.coe).chromaticNumber = CliqueNumber (H.coe) ∨ (H.verts = ∅))
+  G.chromaticNumber = CliqueNumber G ∧ (∀ H : Subgraph G, isInducedSubgraph G H → (H.coe).chromaticNumber = CliqueNumber (H.coe) ∨ (H.verts = ∅))
 
 
 theorem emptyVertsClique (G : SimpleGraph Empty) : CliqueNumber G = 0 := by
@@ -162,6 +162,9 @@ theorem completeChiN {V : Type} [h' : Fintype V] : SimpleGraph.chromaticNumber (
 theorem CompleteIsPerfect {V : Type}  [finV : Fintype V]  [nemp : Nonempty V] [deq : DecidableEq V]  : isPerfect (completeGraph V) := by
   classical
   unfold isPerfect
+  apply And.intro
+  rw [CompleteCliqueN]
+  rw [completeChiN]
   intro H
   intro induced
   have compG2 : isComplete (completeGraph V) := by unfold isComplete; unfold completeGraph; aesop;
@@ -241,6 +244,10 @@ theorem emptyChiOne {V : Type} [Nonempty V] : SimpleGraph.chromaticNumber (empty
 
 theorem EmptyIsPerfect {V : Type} [nemp : Nonempty V] [deq : DecidableEq V]  : isPerfect (emptyGraph V) := by
   unfold isPerfect
+  apply And.intro
+  rw [EmptyCliqueOne]
+  rw [emptyChiOne]
+  rfl
   intro H
   intro induced
   have emptyG2 : isEmpty (emptyGraph V) := by unfold isEmpty; unfold emptyGraph; aesop;
@@ -447,10 +454,16 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
                                         exact fun h3'' => f11 h3''
 
 --TBD: this proof
-theorem oddCycleNotPerfect (n : ℕ) (h : Odd n) : ¬isPerfect (cycle n) := by
+theorem oddCycleNotPerfect (n : ℕ) (h : Odd n) (h2 : n ≥ 4) : ¬isPerfect (cycle n) := by
   unfold isPerfect
-  rw [@not_ball]
-  sorry
+  rw [chiCycle3 n h]
+  rw [CliqueNumberCycleIsTwo]
+  rw [@not_and]
+  intro f1
+  intro f2
+  contrapose! f1
+  norm_num
+  exact h2
 
 --------------------------------------------------------------------------
 --SECTION: PERFECT GRAPH THEOREMS
