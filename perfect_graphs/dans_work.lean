@@ -560,6 +560,12 @@ theorem oddCycleNotPerfect (n : ℕ) (h : Odd n) : ¬isPerfect (cycle n) := by
   have cyclensub := (cycle n).toSubgraph (cycle n)
   have cycleSubGraph := cyclensub cycle_sub_cycle
   use cycleSubGraph
+  apply And.intro
+  unfold isInducedSubgraph
+  unfold Subgraph.Adj
+  intros v w
+  intros f1 f2
+  intro adje
   sorry
 
 /- These three theorems above, combined with the fact that the graph on no vertices has no subgraphs,
