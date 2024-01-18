@@ -31,10 +31,10 @@ def G : SimpleGraph (Fin 5) where
     aesop
   loopless a b := by
     aesop
-    refine (?_ (id right.symm)).snd
-    refine (?_ (id left.symm)).snd
-    done
-    
+    revert right
+    sorry
+    sorry
+
 
 def G' : SimpleGraph (Fin 5) where
   Adj x y  :=
@@ -134,12 +134,16 @@ noncomputable def CliqueNumber {V : Type} (G : SimpleGraph V) : ℕ :=
   sSup { n : ℕ | hasNClique G n }
 
 theorem equivCliqueNumber {V : Type} (G : SimpleGraph V) (k : ℕ) (NClique : hasNClique G k) (notNPlusOneClique : ¬ hasNClique G (k+1)) : CliqueNumber G = k := by
+  unfold CliqueNumber
+  refine IsGreatest.csSup_eq ?H
+  unfold hasNClique
+  unfold hasNClique at NClique
+  unfold hasNClique at notNPlusOneClique
+  unfold IsGreatest
+  refine (and_iff_right NClique).mpr ?H.a
+  unfold upperBounds
+  aesop
   sorry
-
-/- Maybe can redefine this using cliqueSet -/
-
-
-
 
 lemma minuseqrewrite {n : ℕ} {v w : ZMod n} : (v - w = 1) → (v = 1 + w) := by
   intros vminuseq
