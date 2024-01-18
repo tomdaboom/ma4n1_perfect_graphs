@@ -145,6 +145,9 @@ theorem equivCliqueNumber {V : Type} (G : SimpleGraph V) (k : ℕ) (NClique : ha
   aesop
   sorry
 
+def cycle (n : ℕ) : (SimpleGraph (ZMod n)) :=
+  SimpleGraph.fromRel (λ x y => x-y = 1)
+
 lemma minuseqrewrite {n : ℕ} {v w : ZMod n} : (v - w = 1) → (v = 1 + w) := by
   intros vminuseq
   rw [← vminuseq]
@@ -175,8 +178,6 @@ lemma one_one_to_minus_two {n : ℕ} {x y z : ZMod n} : (x - y = 1) → (z - x =
   rwa [<- sub_eq_add_neg] 
     
 
-def cycle (n : ℕ) : (SimpleGraph (ZMod n)) :=
-  SimpleGraph.fromRel (λ x y => x-y = 1)
 
 lemma four_gt_one (n : ℕ) (h : Fact (4 ≤ n)) : Fact (1 < n) := by
   have h' := Fact.elim h
@@ -190,6 +191,9 @@ lemma neg_two_ne_one {n : ℕ} (h : 3 < n) : (-2 : ZMod n) ≠ 1 := by
   contrapose! h
   apply Nat.le_of_dvd zero_lt_three
   exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 3 n).mp h
+
+theorem chiCycle3 (n : ℕ) (h : Odd n) : (cycle n).chromaticNumber = 3 := by
+  sorry
 
 theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) = 2 := by
   unfold CliqueNumber
@@ -207,9 +211,7 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
     rw [@Set.setOf_app_iff]
     have g : Fact (4 ≤ n) := by exact { out := h } 
     have h' : Nontrivial (ZMod n) := by have g' := four_gt_one n ; have g'' := g' g; exact ZMod.nontrivial n;
-    exact not_isUnit_zero
-
-    
+    exact not_isUnit_zero    
   · norm_num
     unfold hasNClique
     rw [@not_exists]
@@ -329,7 +331,9 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
                                         have h3'' := add_left_cancel h3'
                                         revert h3''
                                         exact fun h3'' => f11 h3''
-    
+
+
+
 
 
 def CompleteG (n : ℕ) : SimpleGraph (Fin n) := completeGraph (Fin n)
@@ -526,7 +530,7 @@ theorem emptyVertsClique (G : SimpleGraph Empty) : CliqueNumber G = 0 := by
  apply equivCliqueNumber
  ·unfold hasNClique
   use ∅
-  aesop  
+  aesop
  ·norm_num
   unfold hasNClique
   rw [@not_exists]
@@ -545,6 +549,18 @@ theorem minperfEmptyVerts (G : SimpleGraph Empty) : G.chromaticNumber = CliqueNu
   rw [emptyVertsChrom]
   rw [emptyVertsClique]
   rfl
+
+theorem cycle_sub_cycle : (cycle n) ≤ (cycle n) := by
+  aesop_graph
+
+theorem oddCycleNotPerfect (n : ℕ) (h : Odd n) : ¬isPerfect (cycle n) := by
+  unfold isPerfect
+  rw [@not_ball]
+  rw [@bex_def] 
+  have cyclensub := (cycle n).toSubgraph (cycle n)
+  have cycleSubGraph := cyclensub cycle_sub_cycle
+  use cycleSubGraph
+  sorry
 
 /- These three theorems above, combined with the fact that the graph on no vertices has no subgraphs,
  justify our inclusion of the "∨ H.verts = ∅" clause in our definition of a perfect graph. -/
@@ -704,3 +720,6 @@ theorem CompleteIsPerfect' {V : Type}  [finV : Fintype V]  [nemp : Nonempty V] [
   · right
     rw [@Set.not_nonempty_iff_eq_empty'] at h234 
     exact h234
+
+
+end PerfectGraphs
