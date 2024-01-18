@@ -69,7 +69,11 @@ def hasNCycle' {m : ℕ} (G : SimpleGraph (Fin m)) (n : ℕ) : Prop :=
   isInducedSubgraph G (G.toSubgraph (cycle m))
 
 def hasNCycle {V : Type} (G : SimpleGraph V) (n : ℕ) : Prop :=
-  isInducedSubgraph G (G.toSubgraph (cycle n))
+∃ t, G.isNCycle n t
+
+
+def hasNClique {V : Type} (G : SimpleGraph V) (n : ℕ) : Prop :=
+  ∃ t, G.IsNClique n t
 
 
 
