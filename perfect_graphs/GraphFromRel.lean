@@ -1,11 +1,10 @@
 -- FILEPATH: /Users/achung/Library/CloudStorage/OneDrive-UniversityofWarwick/year 4/lean/lectures/ma4n1_perfect_graphs/perfect_graphs/GraphFromRel.lean
 -- BEGIN: abpxx6d04wxr
-
-
 import Mathlib.Tactic
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Mathlib.Combinatorics.SimpleGraph.Coloring
 import Mathlib.Data.Fintype.Basic
+import Mathlib.Data.Sym.Sym2
 import Mathlib.Combinatorics.SimpleGraph.Connectivity
 
 
@@ -95,6 +94,13 @@ def oddHoleTestG  : SimpleGraph (ZMod 6) :=
 def cycle5  : SimpleGraph (ZMod 5) :=
   SimpleGraph.fromRel (λ x y => x-y = 1)
 
+def adjacencies (u v : ZMod 5) : cycle5.Adj u v := by
+  cases u; cases v;
+
+
+
+
+
 
 
 def hasNCycle {V : Type} (G : SimpleGraph V) (n : Nat) : Prop :=
@@ -104,15 +110,47 @@ def hasNCycle {V : Type} (G : SimpleGraph V) (n : Nat) : Prop :=
 -- theorem connections : cycle5.Adj 1 0 := by
 --   unfold cycle5
 --   aesop_graph
+def my_pair : Sym2 ℕ := Sym2.mk (0, 1)
+#check
 
-def cycle5Walk : cycle5.Walk 0 0  :=
+def zerotoone : cycle5.Adj 0 1 := by
+  unfold cycle5
+  rw [SimpleGraph.adj_iff_exists_edge]
+  constructor
+  {sorry }
+  {
+    use ⟦(0, 1)⟧
+    norm_num
+    
+
+
+  }
+
+
+
+
+
+def cycle5Walk : cycle5.Walk 0 0   :=
+
+  (adjacencies 0 1).toWalk.append
+  ((adjacencies 1 2).toWalk.append
+  ((adjacencies 2 3).toWalk.append
+  ((adjacencies 3 4).toWalk.append
+  (adjacencies  4 0).toWalk)))
+
+  -- exact SimpleGraph.Walk.nil
+  done
+
+#check cycle5Walk
+
+def cycle5WalkisCycle : cycle5Walk.IsCycle := by
+  unfold cycle5Walk
   sorry
+  done
 
 
-def cycle5WalkisCycle : cycle5Walk.IsCycle :=
-  sorry
 
-def cycle5WalkLength5 : cycle5Walk.length=5 :=
+def cycle5WalkLength5 : cycle5Walk.length=5 := by
   sorry
 
 
@@ -122,9 +160,6 @@ theorem cycle5hasc5 : hasNCycle cycle5 5  := by
   use cycle5Walk
   constructor
   {  apply cycle5WalkisCycle
-
   }
   { apply cycle5WalkLength5
-
-
   }
