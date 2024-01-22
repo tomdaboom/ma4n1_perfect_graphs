@@ -105,8 +105,26 @@ def hasNCycle {V : Type} (G : SimpleGraph V) (n : Nat) : Prop :=
 --   unfold cycle5
 --   aesop_graph
 
+def cycle5Walk : cycle5.Walk 0 0  :=
+  sorry
+
+
+def cycle5WalkisCycle : cycle5Walk.IsCycle :=
+  sorry
+
+def cycle5WalkLength5 : cycle5Walk.length=5 :=
+  sorry
+
 
 theorem cycle5hasc5 : hasNCycle cycle5 5  := by
   unfold hasNCycle
-  -- unfold cycle5
-  use  SimpleGraph.Walk.cons
+  use 0
+  use cycle5Walk
+  constructor
+  {  apply cycle5WalkisCycle
+
+  }
+  { apply cycle5WalkLength5
+
+
+  }
