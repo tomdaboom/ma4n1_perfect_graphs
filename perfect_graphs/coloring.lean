@@ -48,17 +48,17 @@ def exampleGraph : SimpleGraph (Fin 5) where
 
 def exampleColoringFunction (v : Fin 5) : Prop :=
   v=0 ∨  v=2
- 
+
 
 -- lemma valid_coloring : ∀ {v w : Fin 5}, exampleGraph.Adj v w → exampleColoringFunction v ≠ exampleColoringFunction w :=
 --   by
 --    intro v w
 --       cases v <;> cases w <;> simp
-     
-     
 
 
-     
+
+
+
 lemma valid_coloring : ∀ {v w : Fin 5}, exampleGraph.Adj v w → exampleColoringFunction v ≠ exampleColoringFunction w :=
   by
     intros v w h
