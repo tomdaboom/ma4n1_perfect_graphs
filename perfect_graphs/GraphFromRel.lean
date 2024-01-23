@@ -86,9 +86,6 @@ def cylceG.Coloring {n : ℕ}: (cycleG n ).Coloring (ZMod 3) :=
 def cycle5  : SimpleGraph (ZMod 5) :=
   SimpleGraph.fromRel (λ x y => x-y = 1)
 
-def adjacencies (u v : ZMod 5) : cycle5.Adj u v := by
-  cases u; cases v;
-
 
 
 
@@ -106,51 +103,113 @@ def my_pair : Sym2 ℕ := Sym2.mk (0, 1)
 
 
 
-lemma five_gt_one (n : ℕ) (h : Fact (4 ≤ n)) : Fact (1 < n) := by
-  have h' := Fact.elim h
+lemma five_gt_one : Fact (1 < 5) := by
   refine fact_iff.mpr ?_
   refine Nat.succ_le_iff.mp ?_
   norm_num
-  linarith
+
+
+def zmod5nontrivial : Nontrivial (ZMod 5):= by
+  have h := five_gt_one
+  exact ZMod.nontrivial 5
+
 
 def zerotoone : cycle5.Adj 0 1 := by
   unfold cycle5
+  have h := zmod5nontrivial
+
   rw [SimpleGraph.adj_iff_exists_edge]
   constructor
-  {sorry }
+  {    exact zero_ne_one}  -- this implicitly uses h
   {
-    use ⟦(0, 1)⟧
+    use s(0, 1)
     norm_num
-    have h' : Nontrivial (ZMod 5) := by  exact ZMod.nontrivial 5;
-
 
   }
 
+def adjacencies (u v : ZMod 5)  (h: v-u=1  ): cycle5.Adj u v := by
+  unfold cycle5
+  have h' := zmod5nontrivial
+  simp_all only [SimpleGraph.fromRel_adj, ne_eq, or_true, and_true]
+  intro
+  simp_all only [sub_self, zero_ne_one]
 
 
 
 
-def cycle5Walk : cycle5.Walk 0 0   :=
-  (adjacencies 0 1).toWalk.append
-  ((adjacencies 1 2).toWalk.append
-  ((adjacencies 2 3).toWalk.append
-  ((adjacencies 3 4).toWalk.append
-  (adjacencies  4 0).toWalk)))
+lemma oneminuszero : (1: ZMod 5)-0=1 := by norm_num
+lemma  twominusone : (2: ZMod 5)-1=1  := by norm_num
+lemma  threeminustwo : (3: ZMod 5)-2=1  := by norm_num
+lemma  fourminusthree : (4: ZMod 5)-3=1  := by norm_num
+lemma  zerominusfour : (0: ZMod 5)-4=1  := by
+  simp_all only [zero_sub]
+  apply Eq.refl
 
-  -- exact SimpleGraph.Walk.nil
-  done
 
-#check cycle5Walk
+
+
+def  cycle5Walk : SimpleGraph.Walk cycle5 0 0  :=
+  (adjacencies 0 1  oneminuszero).toWalk.append
+  ((adjacencies 1 2 twominusone).toWalk.append
+  ((adjacencies 2 3 threeminustwo).toWalk.append
+  ((adjacencies 3 4 fourminusthree).toWalk.append
+  (adjacencies  4 0 zerominusfour).toWalk)))
+
+
+theorem cycle5WalkisTrail : cycle5Walk.IsTrail := by
+  unfold cycle5Walk
+  aesop
+  sorry
+
+theorem cycle5WalkisnotNill : cycle5Walk ≠ nil := by
+  unfold cycle5Walk
+  aesop
+
+
+  sorry
+
+theorem cycle5Walktailnodup : cycle5Walk.support.tail.Nodup := by
+  unfold cycle5Walk
+  have h' := zmod5nontrivial
+
+  aesop?
+
+
+
+
 
 def cycle5WalkisCycle : cycle5Walk.IsCycle := by
-  unfold cycle5Walk
+  -- apply isCycle.mk
+  rw [isCycle.mk cycle5WalkisTrail cycle5WalkisnotNill cycle5Walktailnodup]
+
+
+  -- unfold cycle5Walk
+  -- simp only [SimpleGraph.Walk.cons_append, SimpleGraph.Walk.nil_append]
+  -- unfold cycle5Walk.proof_1
+  -- unfold cycle5Walk.proof_3
+  -- unfold cycle5Walk.proof_5
+  -- unfold cycle5Walk.proof_7
+  -- unfold cycle5Walk.proof_8
+
+
+
+
+
+
+
+
+
+
   sorry
   done
-
 
 
 def cycle5WalkLength5 : cycle5Walk.length=5 := by
-  sorry
+  apply Eq.refl (SimpleGraph.Walk.length Relations.cycle5Walk)
+
+
+
+
 
 
 theorem cycle5hasc5 : hasNCycle cycle5 5  := by
@@ -173,12 +232,13 @@ def oddHoleTestG  : SimpleGraph (ZMod 6) :=
    else if x.val=5 ∧ y.val=0 then True
    else False )
 
-def adjacenciesTestG (u v : ZMod 5) : cycle5.Adj u v := by
+
+def adjacenciesTestG (u v : ZMod 5) (h: u-v=1) (h2: (u.val<5 ∧ v.val<5)): oddHoleTestG.Adj u v := by
   cases u; cases v;
   sorry
 
 
-def TestGCycle5walk : oddHoleTestG.Walk 0 0   :=
+def TestGCycle5walk : oddHoleTestG.Walk 0 0  :=
   (adjacenciesTestG 0 1).toWalk.append
   ((adjacenciesTestG 1 2).toWalk.append
   ((adjacenciesTestG 2 3).toWalk.append
@@ -186,21 +246,24 @@ def TestGCycle5walk : oddHoleTestG.Walk 0 0   :=
   (adjacenciesTestG  4 0).toWalk)))
 
 
-def TestGCycle5walkisCycle : cycle5Walk.IsCycle := by
-  unfold cycle5Walk
+
+def TestGCycle5walkisCycle : TestGCycle5walk.IsCycle := by
+  unfold TestGCycle5walk
   sorry
   done
 
 
 
-def TestGCycle5walkLength5 : cycle5Walk.length=5 := by
+def TestGCycle5walkLength5 : TestGCycle5walk.length=5 := by
   sorry
   -- exact SimpleGraph.Walk.nil
   done
+
+
 theorem TestGhasc5 : hasNCycle  oddHoleTestG 5 := by
-    unfold hasNCycle
+  unfold hasNCycle
   use 0
-  use cycle5Walk
+  use TestGCycle5walk
   constructor
   {  apply TestGCycle5walkisCycle
   }

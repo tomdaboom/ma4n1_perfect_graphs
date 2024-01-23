@@ -140,7 +140,6 @@ lemma cliqueNumberstuff
   unfold hasNClique
   intros h
   aesop
-
   rw [@isNClique_iff] at h_1 
   cases h_1 with 
   | intro clique card => 
@@ -150,7 +149,11 @@ lemma cliqueNumberstuff
     rw [@Nat.le_antisymm_iff] at card 
     cases card with
     | intro lower upper =>
-    
+    have one_le_w := le_trans' upper n_bound
+    exact Multiset.card_pos_iff_exists_mem.mp one_le_w
+  
+  
+
   
 
 
