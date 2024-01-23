@@ -1,5 +1,3 @@
--- FILEPATH: /Users/achung/Library/CloudStorage/OneDrive-UniversityofWarwick/year 4/lean/lectures/ma4n1_perfect_graphs/perfect_graphs/GraphFromRel.lean
--- BEGIN: abpxx6d04wxr
 import Mathlib.Tactic
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Mathlib.Combinatorics.SimpleGraph.Coloring
@@ -80,13 +78,7 @@ def cylceG.Coloring {n : ℕ}: (cycleG n ).Coloring (ZMod 3) :=
 
 
     )
-def oddHoleTestG  : SimpleGraph (ZMod 6) :=
-  SimpleGraph.fromRel (λ x y =>
-   if x.val<5 ∧ y.val<5 then
-   x-y=1
-   else if x.val=5 ∧ y.val=4 then True
-   else if x.val=5 ∧ y.val=3 then True
-   else False )
+
 
 #eval hasNCycle cycle5 5
 
@@ -111,7 +103,15 @@ def hasNCycle {V : Type} (G : SimpleGraph V) (n : Nat) : Prop :=
 --   unfold cycle5
 --   aesop_graph
 def my_pair : Sym2 ℕ := Sym2.mk (0, 1)
-#check
+
+
+
+lemma five_gt_one (n : ℕ) (h : Fact (4 ≤ n)) : Fact (1 < n) := by
+  have h' := Fact.elim h
+  refine fact_iff.mpr ?_
+  refine Nat.succ_le_iff.mp ?_
+  norm_num
+  linarith
 
 def zerotoone : cycle5.Adj 0 1 := by
   unfold cycle5
@@ -121,7 +121,7 @@ def zerotoone : cycle5.Adj 0 1 := by
   {
     use ⟦(0, 1)⟧
     norm_num
-    
+    have h' : Nontrivial (ZMod 5) := by  exact ZMod.nontrivial 5;
 
 
   }
@@ -131,7 +131,6 @@ def zerotoone : cycle5.Adj 0 1 := by
 
 
 def cycle5Walk : cycle5.Walk 0 0   :=
-
   (adjacencies 0 1).toWalk.append
   ((adjacencies 1 2).toWalk.append
   ((adjacencies 2 3).toWalk.append
@@ -162,4 +161,48 @@ theorem cycle5hasc5 : hasNCycle cycle5 5  := by
   {  apply cycle5WalkisCycle
   }
   { apply cycle5WalkLength5
+  }
+
+
+
+
+def oddHoleTestG  : SimpleGraph (ZMod 6) :=
+  SimpleGraph.fromRel (λ x y =>
+   if x.val<5 ∧ y.val<5 then
+   x-y=1
+   else if x.val=5 ∧ y.val=0 then True
+   else False )
+
+def adjacenciesTestG (u v : ZMod 5) : cycle5.Adj u v := by
+  cases u; cases v;
+  sorry
+
+
+def TestGCycle5walk : oddHoleTestG.Walk 0 0   :=
+  (adjacenciesTestG 0 1).toWalk.append
+  ((adjacenciesTestG 1 2).toWalk.append
+  ((adjacenciesTestG 2 3).toWalk.append
+  ((adjacenciesTestG 3 4).toWalk.append
+  (adjacenciesTestG  4 0).toWalk)))
+
+
+def TestGCycle5walkisCycle : cycle5Walk.IsCycle := by
+  unfold cycle5Walk
+  sorry
+  done
+
+
+
+def TestGCycle5walkLength5 : cycle5Walk.length=5 := by
+  sorry
+  -- exact SimpleGraph.Walk.nil
+  done
+theorem TestGhasc5 : hasNCycle  oddHoleTestG 5 := by
+    unfold hasNCycle
+  use 0
+  use cycle5Walk
+  constructor
+  {  apply TestGCycle5walkisCycle
+  }
+  { apply TestGCycle5walkLength5
   }
