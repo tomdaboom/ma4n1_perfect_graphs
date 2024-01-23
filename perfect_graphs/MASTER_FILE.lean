@@ -320,12 +320,16 @@ theorem CompleteIsPerfect {V : Type}  [finV : Fintype V]  [nemp : Nonempty V] [d
 def cycle (n : ℕ) : (SimpleGraph (ZMod n)) :=
   SimpleGraph.fromRel (λ x y => x-y = 1)
 
+--The following lemmas are used in the proof of
+--a cycle's clique number being 2 and/or its chromatic number being 3
 
+--Rewrites two elements of Z mod n with a difference of 1
 lemma minuseqrewrite {n : ℕ} {u v: ZMod n} : (u - v = 1) → (u = 1 + v) := by
   intros vminuseq
   rw [← vminuseq]
   simp only [sub_add_cancel]
 
+--Uses transitivity to find elements with a difference of 2 in Z mod n
 lemma one_one_to_two {n : ℕ} {x y z : ZMod n} : (x - y = 1) → (z - x = 1) → (z - y = 2) := by
   intros xminy zminx
   have yplusone := minuseqrewrite xminy
@@ -336,6 +340,7 @@ lemma one_one_to_two {n : ℕ} {x y z : ZMod n} : (x - y = 1) → (z - x = 1) �
   rw [← zminx]
   exact eq_add_of_sub_eq (congrArg (HSub.hSub (z - y)) zminx)
 
+--Similar to one_one_to_two but with the "smaller" element first
 lemma one_one_to_minus_two {n : ℕ} {x y z : ZMod n} : (x - y = 1) → (z - x = 1) → (y - z = -2) := by
   intros xminy zminx
   have yplusone := minuseqrewrite xminy
@@ -350,6 +355,8 @@ lemma one_one_to_minus_two {n : ℕ} {x y z : ZMod n} : (x - y = 1) → (z - x =
   symm
   rwa [<- sub_eq_add_neg]
 
+--If n ≥ 4 then it is certainly > 1
+--This is required due to how "Fact" is used in the non-triviality of Z mod n 
 lemma four_gt_one (n : ℕ) (h : Fact (4 ≤ n)) : Fact (1 < n) := by
   have h' := Fact.elim h
   refine fact_iff.mpr ?_
@@ -357,24 +364,30 @@ lemma four_gt_one (n : ℕ) (h : Fact (4 ≤ n)) : Fact (1 < n) := by
   norm_num
   linarith
 
+--If n > 3 mod n then n - 2 ≠ 1 mod n
 lemma neg_two_ne_one {n : ℕ} (h : 3 < n) : (-2 : ZMod n) ≠ 1 := by
   rw[ne_eq, eq_comm, eq_neg_iff_add_eq_zero, add_comm, two_add_one_eq_three]
   contrapose! h
   apply Nat.le_of_dvd zero_lt_three
   exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 3 n).mp h
 
+--TBD: proof?
 theorem chiCycle3 (n : ℕ) (h : Odd n) : (cycle n).chromaticNumber = 3 := by
   sorry
 
+--Proof that the clique number of any cycle is 2
 theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) = 2 := by
   unfold CliqueNumber
   apply equivCliqueNumber
   unfold hasNClique
+  --Has 2 clique
+  --For our 2- clique we will use vertices 0 and 1, then show they're a clique
   · use {0,1}
     apply IsNClique.mk
     unfold IsClique
     unfold cycle
     aesop_graph
+    --Prove non-triviality
     refine Finset.card_pair ?h.card_eq.h
     refine zero_mem_nonunits.mp ?h.card_eq.h.a
     rw [@Set.mem_def]
@@ -383,65 +396,74 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
     have g : Fact (4 ≤ n) := by exact { out := h }
     have h' : Nontrivial (ZMod n) := by have g' := four_gt_one n ; have g'' := g' g; exact ZMod.nontrivial n;
     exact not_isUnit_zero
+  --Doesn't have 3 clique
   · norm_num
     unfold hasNClique
     rw [@not_exists]
-    intro x
+    intro x --The set which is not a 3 clique
     rw [@is3Clique_iff]
     rw [@not_exists]
-    intro a
+    intro a --First vertex of x
     rw [@not_exists]
-    intro b
+    intro b --Second vertex of x
     rw [@not_exists]
-    intro c
+    intro c --Third vertex of x
     intro f
+    --Splits up all the individual adjacencies to prove/ disprove
+    --Requires a lot of work of all the cases of the vertices being bigger or smaller than each other
     cases f with
     | intro f1 f2 =>
       cases f2 with
       | intro f2 f3 =>
         cases f3 with
         | intro f3 f4 =>
+    --We'll assume the edges ac and bc exist, then show that a and b can't be adjacent
     revert f1
     unfold SimpleGraph.Adj
     unfold cycle
     simp
-    intro f11
-    intro f12
+    intro f11 --Hypothesis: a and b distinct
+    intro f12 --Hypothesis: a and b are one apart (either a > b or b > a)
     cases f12 with
+    --Case: a > b
     | inl h1 => revert f2
                 unfold SimpleGraph.Adj
                 unfold cycle
                 simp
-                intro f21
-                intro f22
+                intro f21 --Hypothesis: a and c distinct (used in introduction of f22)
+                intro f22 --Hypothesis: a and c are one apart (either a > c or c > a)
                 cases f22 with
+                --Case: a > c
                 | inl h2 => revert f3
                             unfold SimpleGraph.Adj
                             unfold cycle
                             simp
-                            intro f31
-                            intro f32
+                            intro f31 --Hypothesis: b and c distinct
+                            intro f32 --Hypothesis: b and c are one apart (either b > c or c > b)
                             cases f32 with
+                            --Case: b > c
                             | inl h3 => have h1' := minuseqrewrite h1
                                         have h2' := minuseqrewrite h2
                                         rw [h1'] at h2'
                                         have h2'' := add_left_cancel h2'
                                         revert h2''
                                         exact fun h2'' => f31 h2''
+                            --Case: c > b
                             | inr h3 => have h1' := minuseqrewrite h1
                                         have h2' := minuseqrewrite h2
                                         rw [h1'] at h2'
                                         have h2'' := add_left_cancel h2'
                                         revert h2''
                                         exact fun h2'' => f31 h2''
-
+                --Case: c > a
                 | inr h2 => revert f3
                             unfold SimpleGraph.Adj
                             unfold cycle
                             simp
-                            intro f31
-                            intro f32
+                            intro f31 --Hypothesis: b and c distinct
+                            intro f32 --Hypothesis: b and c are one apart (either b > c or c > b)
                             cases f32 with
+                            --Case: b > c
                             | inl h3 => have h4 := one_one_to_minus_two h1 h2
                                         rw [h4] at h3
                                         revert h3
@@ -449,33 +471,37 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
                                         rw [<- ne_eq]
                                         have h' := Nat.succ_le_iff.mp h
                                         exact neg_two_ne_one h'
-
+                            --Case: c > b
                             | inr h3 => have h2' := minuseqrewrite h2
                                         have h3' := minuseqrewrite h3
                                         rw [h3'] at h2'
                                         have h2'' := add_left_cancel h2'
                                         revert h2''
                                         exact fun h2'' => f11 (id h2''.symm)
+    --Case: b > a
     | inr h1 => revert f2
                 unfold SimpleGraph.Adj
                 unfold cycle
                 simp
-                intro f21
-                intro f22
+                intro f21 --Hypothesis: a and c distinct
+                intro f22 --Hypothesis: a and c are one apart (either a > c or c > a)
                 cases f22 with
+                --Case: a > c
                 | inl h2 => revert f3
                             unfold SimpleGraph.Adj
                             unfold cycle
                             simp
-                            intro f31
-                            intro f32
+                            intro f31 --Hypothesis: b and c distinct
+                            intro f32 --Hypothesis: b and c are one apart (either b > c or c > b)
                             cases f32 with
+                            --Case: b > c
                             | inl h3 => have h1' := minuseqrewrite h1
                                         have h3' := minuseqrewrite h3
                                         rw [h1'] at h3'
                                         have h3'' := add_left_cancel h3'
                                         revert h3''
                                         exact fun h3'' => f21 h3''
+                            --Case: c > b
                             | inr h3 => have h4 := one_one_to_minus_two h1 h3
                                         rw [h4] at h2
                                         revert h2
@@ -483,19 +509,22 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
                                         rw [<- ne_eq]
                                         have h' := Nat.succ_le_iff.mp h
                                         exact neg_two_ne_one h'
+                --Case: c > a
                 | inr h2 => revert f3
                             unfold SimpleGraph.Adj
                             unfold cycle
                             simp
-                            intro f31
-                            intro f32
+                            intro f31 --Hypothesis: b and c distinct
+                            intro f32 --Hypothesis: b and c are one apart (either b > c or c > b)
                             cases f32 with
+                            --Case: b > c
                             | inl h3 => have h1' := minuseqrewrite h1
                                         have h3' := minuseqrewrite h3
                                         rw [h1'] at h3'
                                         have h3'' := add_left_cancel h3'
                                         revert h3''
                                         exact fun h3'' => f21 h3''
+                            --Case: c > b
                             | inr h3 => have h2' := minuseqrewrite h2
                                         have h3' := minuseqrewrite h3
                                         rw [h2'] at h3'
