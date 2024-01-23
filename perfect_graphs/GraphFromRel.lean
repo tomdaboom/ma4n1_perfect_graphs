@@ -145,6 +145,8 @@ lemma  zerominusfour : (0: ZMod 5)-4=1  := by
   simp_all only [zero_sub]
   apply Eq.refl
 
+lemma uplusoneminusu (u : ZMod 5): u+1-u=1 := by
+  simp_all only [add_sub_cancel']
 
 
 
@@ -164,15 +166,26 @@ theorem cycle5WalkisTrail : cycle5Walk.IsTrail := by
 theorem cycle5WalkisnotNill : cycle5Walk ≠ nil := by
   unfold cycle5Walk
   aesop
-
-
   sorry
+
+
+lemma zeronotequalone (h': Nontrivial (ZMod 5)) (h: (0: ZMod 5) = 1) : False := by
+  simp_all only [zero_ne_one]
+
+
 
 theorem cycle5Walktailnodup : cycle5Walk.support.tail.Nodup := by
   unfold cycle5Walk
   have h' := zmod5nontrivial
+  simp only [SimpleGraph.Walk.cons_append, SimpleGraph.Walk.nil_append,
+    SimpleGraph.Walk.support_cons, SimpleGraph.Walk.support_nil, List.tail_cons, List.nodup_cons,
+    List.mem_cons, List.mem_singleton, one_ne_zero, or_false, List.not_mem_nil, not_false_eq_true,
+    List.nodup_nil, and_self, and_true]
 
-  aesop?
+  aesop
+
+
+
 
 
 
@@ -183,32 +196,12 @@ def cycle5WalkisCycle : cycle5Walk.IsCycle := by
   rw [isCycle.mk cycle5WalkisTrail cycle5WalkisnotNill cycle5Walktailnodup]
 
 
-  -- unfold cycle5Walk
-  -- simp only [SimpleGraph.Walk.cons_append, SimpleGraph.Walk.nil_append]
-  -- unfold cycle5Walk.proof_1
-  -- unfold cycle5Walk.proof_3
-  -- unfold cycle5Walk.proof_5
-  -- unfold cycle5Walk.proof_7
-  -- unfold cycle5Walk.proof_8
-
-
-
-
-
-
-
-
-
-
   sorry
   done
 
 
 def cycle5WalkLength5 : cycle5Walk.length=5 := by
-  apply Eq.refl (SimpleGraph.Walk.length Relations.cycle5Walk)
-
-
-
+  apply Eq.refl (SimpleGraph.Walk.length cycle5Walk)
 
 
 
