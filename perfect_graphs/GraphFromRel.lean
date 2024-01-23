@@ -157,22 +157,28 @@ def  cycle5Walk : SimpleGraph.Walk cycle5 0 0  :=
   ((adjacencies 3 4 fourminusthree).toWalk.append
   (adjacencies  4 0 zerominusfour).toWalk)))
 
+lemma noteqinMod5 {u v : ZMod 5} (h : ¬(u - v).val ∣ 5) : u ≠ v := by
+  sorry
+
 
 theorem cycle5WalkisTrail : cycle5Walk.IsTrail := by
   unfold cycle5Walk
   aesop
   sorry
 
-theorem cycle5WalkisnotNill : cycle5Walk ≠ nil := by
+theorem cycle5WalkisnotNill : cycle5Walk ≠ SimpleGraph.Walk.nil := by
   unfold cycle5Walk
-  aesop
-  sorry
+  simp_all only [SimpleGraph.Walk.cons_append, SimpleGraph.Walk.nil_append, ne_eq, not_false_eq_true]
 
 
 lemma zeronotequalone (h': Nontrivial (ZMod 5)) (h: (0: ZMod 5) = 1) : False := by
   simp_all only [zero_ne_one]
 
 
+lemma minuseqrewrite {n : ℕ} {v w : ZMod n} : (v - w = 1) → (v = 1 + w) := by
+  intros vminuseq
+  rw [← vminuseq]
+  simp only [sub_add_cancel]
 
 theorem cycle5Walktailnodup : cycle5Walk.support.tail.Nodup := by
   unfold cycle5Walk
@@ -191,12 +197,28 @@ theorem cycle5Walktailnodup : cycle5Walk.support.tail.Nodup := by
 
 
 
-def cycle5WalkisCycle : cycle5Walk.IsCycle := by
-  -- apply isCycle.mk
-  rw [isCycle.mk cycle5WalkisTrail cycle5WalkisnotNill cycle5Walktailnodup]
-
-
   sorry
+
+
+
+
+-- defined in simplegraph.walk.connectivity file but lean couldnt find it
+universe u
+variable {V : Type u}
+variable (G : SimpleGraph V)
+theorem isCycle_def {u : V} (p : G.Walk u u) :
+    p.IsCycle ↔ p.IsTrail ∧ p ≠ SimpleGraph.Walk.nil ∧ p.support.tail.Nodup :=
+  Iff.intro (fun h => ⟨h.1.1, h.1.2, h.2⟩) fun h => ⟨⟨h.1, h.2.1⟩, h.2.2⟩
+
+
+def cycle5WalkisCycle : cycle5Walk.IsCycle := by
+  rw [isCycle_def]
+  constructor
+  apply cycle5WalkisTrail
+  constructor
+  apply cycle5WalkisnotNill
+  apply cycle5Walktailnodup
+
   done
 
 
