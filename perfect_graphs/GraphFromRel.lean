@@ -8,8 +8,9 @@ import Mathlib.Combinatorics.SimpleGraph.Connectivity
 
 
 
-namespace Relations
-
+namespace rels
+open SimpleGraph
+open Subgraph
 def cycleG (n : ℕ) : SimpleGraph (ZMod n) :=
   SimpleGraph.fromRel (λ x y => x-y = 1)
 
@@ -157,28 +158,45 @@ def  cycle5Walk : SimpleGraph.Walk cycle5 0 0  :=
   ((adjacencies 3 4 fourminusthree).toWalk.append
   (adjacencies  4 0 zerominusfour).toWalk)))
 
-lemma noteqinMod5 {u v : ZMod 5} (h : ¬(u - v).val ∣ 5) : u ≠ v := by
-  sorry
 
 
-theorem cycle5WalkisTrail : cycle5Walk.IsTrail := by
-  unfold cycle5Walk
-  aesop
-  sorry
+
 
 theorem cycle5WalkisnotNill : cycle5Walk ≠ SimpleGraph.Walk.nil := by
   unfold cycle5Walk
   simp_all only [SimpleGraph.Walk.cons_append, SimpleGraph.Walk.nil_append, ne_eq, not_false_eq_true]
 
-
-lemma zeronotequalone (h': Nontrivial (ZMod 5)) (h: (0: ZMod 5) = 1) : False := by
+-- these can probably be combined into one
+lemma zero_ne_one' (h': Nontrivial (ZMod 5)) (h: (0: ZMod 5) = 1) : False := by
   simp_all only [zero_ne_one]
 
 
-lemma minuseqrewrite {n : ℕ} {v w : ZMod n} : (v - w = 1) → (v = 1 + w) := by
-  intros vminuseq
-  rw [← vminuseq]
-  simp only [sub_add_cancel]
+
+lemma zero_ne_two : (0 : ZMod 5) = 2 -> False := by
+  have h : 2<5 := by norm_num
+  simp only [imp_false]
+  contrapose! h
+  apply Nat.le_of_dvd zero_lt_two
+  symm at h
+  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 2 5).mp h
+
+lemma zero_ne_three : (0 : ZMod 5) = 3 -> False := by
+  have h : 3<5 := by norm_num
+  simp only [imp_false]
+  contrapose! h
+  apply Nat.le_of_dvd zero_lt_three
+  symm at h
+  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 3 5).mp h
+
+lemma zero_ne_four : (0 : ZMod 5) = 4 -> False := by
+  have h : 4<5 := by norm_num
+  simp only [imp_false]
+  contrapose! h
+  apply Nat.le_of_dvd zero_lt_four
+  symm at h
+  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 4 5).mp h
+
+
 
 theorem cycle5Walktailnodup : cycle5Walk.support.tail.Nodup := by
   unfold cycle5Walk
@@ -187,18 +205,77 @@ theorem cycle5Walktailnodup : cycle5Walk.support.tail.Nodup := by
     SimpleGraph.Walk.support_cons, SimpleGraph.Walk.support_nil, List.tail_cons, List.nodup_cons,
     List.mem_cons, List.mem_singleton, one_ne_zero, or_false, List.not_mem_nil, not_false_eq_true,
     List.nodup_nil, and_self, and_true]
-
   aesop
+  · rw [<- add_right_cancel_iff (a := -1)] at h
+    norm_num at h
+    exact zero_ne_one' h' h
+
+  · rw [<- add_right_cancel_iff (a := -1)] at h
+    norm_num at h
+    exact zero_ne_two h
+  · rw [<- add_right_cancel_iff (a := -1)] at h
+    norm_num at h
+    exact zero_ne_three h
+  · rw [<- add_right_cancel_iff (a := -2)] at h
+    norm_num at h
+    exact zero_ne_one' h' h
+
+  · rw [<- add_right_cancel_iff (a := -2)] at h
+    norm_num at h
+    exact zero_ne_two h
+  · symm at h
+    exact zero_ne_two h
+  · rw [<- add_right_cancel_iff (a := -3)] at h
+    norm_num at h
+    exact zero_ne_one' h' h
+  · symm at h
+    exact zero_ne_three h
+  · symm at a
+    exact zero_ne_four a
+  done
 
 
-
-
-
-
-
-
-  sorry
-
+-- definitely a better way do this. Maybe using <;> ?
+theorem cycle5WalkisTrail : cycle5Walk.IsTrail := by
+  have h' := zmod5nontrivial
+  unfold cycle5Walk
+  aesop
+  · exact zero_ne_three (id left.symm)
+  · symm at h
+    exact zero_ne_three h
+  · rw [<- add_right_cancel_iff (a := -2)] at left
+    norm_num at left
+    exact zero_ne_two left
+  · rw [<- add_right_cancel_iff (a := -2)] at h
+    norm_num at h
+    exact zero_ne_two h
+  · symm at right
+    exact zero_ne_three right
+  · symm at left
+    exact zero_ne_two left
+  · rw [<- add_right_cancel_iff (a := -1)] at left
+    norm_num at left
+    exact zero_ne_two left
+  · rw [<- add_right_cancel_iff (a := -1)] at h
+    norm_num at h
+    exact zero_ne_two h
+  · rw [<- add_right_cancel_iff (a := -1)] at left
+    norm_num at left
+    exact zero_ne_two left
+  · rw [<- add_right_cancel_iff (a := -1)] at left
+    norm_num at left
+    exact zero_ne_three left
+  · symm at right
+    exact zero_ne_two right
+  · exact zero_ne_two h
+  · exact zero_ne_two left
+  · exact zero_ne_three left
+  · exact zero_ne_three left
+  · exact zero_ne_four left
+  · rw [<- add_right_cancel_iff (a := -1)] at h
+    norm_num at h
+    exact zero_ne_three h
+  done
 
 
 
@@ -236,6 +313,50 @@ theorem cycle5hasc5 : hasNCycle cycle5 5  := by
   }
   { apply cycle5WalkLength5
   }
+
+def hasOddHole {V : Type} (G : SimpleGraph V) : Prop :=
+  ∃ n : ℕ, hasNCycle G (2*n+5) --odd cycle of length ≥ 5, using that 0 ∈ ℕ in Lean
+
+
+theorem cycle5hasOddHole : hasOddHole cycle5 := by
+  unfold hasOddHole
+  use 0
+  exact cycle5hasc5
+
+
+-- repeat definitions
+def isInducedSimpleGraph {V : Type} (H : SimpleGraph V) (H' : SimpleGraph V) : Prop :=
+  ∀ {v w : V}, (H.Adj v w → H'.Adj v w) ∨ (H'.neighborSet v = ∅) ∨ (H'.neighborSet w = ∅)
+
+def coe {V : Type}{G : SimpleGraph V}(H : Subgraph G) : SimpleGraph H.verts where
+  Adj v w := H.Adj v w
+  symm _ _ h := H.symm h
+  loopless v h := loopless G v (H.adj_sub h)
+def isInducedSubgraph {V : Type} (H : SimpleGraph V) (H' : Subgraph H) : Prop :=
+  ∀ {v w : V}, v ∈ H'.verts → w ∈ H'.verts → H.Adj v w → H'.Adj v
+
+def hasNClique {V : Type} (G : SimpleGraph V) (n : ℕ) : Prop :=
+  ∃ t, G.IsNClique n t
+noncomputable def CliqueNumber {V : Type} (G : SimpleGraph V) : ℕ :=
+  sSup { n : ℕ | hasNClique G n }
+
+def isPerfect {V : Type} (G : SimpleGraph V) : Prop :=
+  ∀ H : Subgraph G, isInducedSubgraph G H → (coe H).chromaticNumber = CliqueNumber (coe H)
+
+
+theorem strongPerfectGraphTheorem {V : Type} (G : SimpleGraph V) : isPerfect G ↔ ¬ hasOddHole G ∧ ¬ hasOddHole Gᶜ := by
+  sorry
+
+
+theorem cycle5notPerfect : ¬ isPerfect cycle5 := by
+  rw [strongPerfectGraphTheorem]
+  simp only [not_and_or]
+  rw [not_not]
+  refine Or.inl ?h
+  exact cycle5hasOddHole
+
+
+
 
 
 
