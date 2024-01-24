@@ -86,13 +86,151 @@ lemma zero_neq_1 (n : ℕ) (n_lower_bounded : n ≥ 4) : ¬ (0 : ZMod n) = 1 := 
 lemma zero_neq_2 : (0 : Fin 3) ≠ 2 := by  
   exact (bne_iff_ne 0 2).mp rfl
 
+lemma zero_neq_2_zmod (n : ℕ) (n_lower_bounded : n ≥ 4) : ¬ (0 : ZMod n) = 2 := by
+  rw [← @ne_eq]
+  sorry
+  
+
+def odd_cycle_three_coloring {n : ℕ} (x : ZMod n) : Fin 3 := 
+  if x=0 then 2 else
+  if x=1 then 0 else
+  1 - odd_cycle_three_coloring (x-1)
+  termination_by _ => 0
+  decreasing_by  sorry
+
+lemma adjacent_distinct {n : ℕ} {n_lower_bound: n ≥ 4} (w : ZMod n) : odd_cycle_three_coloring w ≠ odd_cycle_three_coloring (w-1) := by 
+  by_cases w_is_zero : w = 0
+  · rw [w_is_zero]
+    simp only [zero_sub, ne_eq]
+    unfold odd_cycle_three_coloring
+    simp only [zero_sub, ite_true, neg_eq_zero]
+    have zne1 := zero_neq_1 n n_lower_bound
+    rw [← @ne_eq, @ne_comm, @ne_eq] at zne1 
+    rw [if_neg zne1]
+
+
+
+
+/
+lemma coloring_not_two {n : ℕ} {n_lower_bound : n ≥ 4} (w : ZMod n) {h : ¬ w = 1}
+  : 2 ≠ odd_cycle_three_coloring (w-1) := by
+  sorry
+  --by_cases w_zero : w = 0
+  --· rw [w_zero]
+
+
+  
+set_option maxHeartbeats 1000000
+
 theorem chiCycle3 (n : ℕ) (h : Odd n) (n_lower_bound : n ≥ 4) : (cycle n).chromaticNumber = 3 := by
   classical
   apply chromaticNumberAltDef
+  · 
+    have coloring : SimpleGraph.Coloring (cycle n) (Fin 3) := SimpleGraph.Coloring.mk odd_cycle_three_coloring
+      (by
+        intros v w  
+        unfold cycle
+        simp only [SimpleGraph.fromRel_adj, ne_eq, and_imp]
+        intros v_neq_w
+        intros diff_v_w_is_one
+        cases diff_v_w_is_one with
+        | inl a1 => 
+          rw [@sub_eq_iff_eq_add] at a1 
+          rw [a1]
+          unfold odd_cycle_three_coloring
+          simp only [add_right_eq_self, add_sub_cancel']
+
+          aesop?
+
+          · contrapose! a
+            rw?
+            sorry
+
+          · contrapose! a; exact zero_neq_2
+
+          · contrapose! a 
+            rw [@sub_ne_zero]
+            unfold odd_cycle_three_coloring
+            simp only [sub_self, ite_true, ne_eq]
+            rw [if_neg]
+            · exact one_ne_zero
+            · sorry
+
+          · contrapose! a
+            exact adjacent_distinct w
+
+        | inr a2 =>
+          rw [@sub_eq_iff_eq_add] at a2
+          rw [a2]
+          unfold odd_cycle_three_coloring
+          simp only [add_right_eq_self, add_sub_cancel']
+
+          aesop?
+          
+          · contrapose! a; exact coloring_not_two v
+
+          · contrapose! a; exact zero_neq_2
+
+          · contrapose! a 
+            rw [@sub_ne_zero]
+            unfold odd_cycle_three_coloring
+            simp only [sub_self, ite_true, ne_eq]
+            rw [if_neg]
+            · exact one_ne_zero
+            · sorry
+
+          · contrapose! a
+            exact adjacent_distinct v
+          
+      )
+
+    unfold SimpleGraph.Colorable
+    exact Nonempty.intro coloring
+
+    /-
+    induction n with
+    | zero =>
+      have coloring := SimpleGraph.Coloring.mk (G := cycle Nat.zero)
+        (λ _ => (0 : Fin 3))
+        (by
+          intros v w
+        ) 
+
+      unfold SimpleGraph.Colorable
+      exact Nonempty.intro coloring
+
+    | succ d hd => 
+    -/
+
+
+
+/-
+          intros v w
+          unfold cycle
+          simp only [SimpleGraph.fromRel_adj, ne_eq, and_imp]
+          intros v_neq_w
+          intros diff_v_w_is_one
+          unfold odd_cycle_three_coloring
+          simp only [beq_iff_eq]
+          aesop?
+          · contrapose! a; rw [@ne_comm]; exact zero_neq_2
+          · unfold odd_cycle_three_coloring at a
+            rw [@neg_eq_iff_eq_neg] at h_1
+            contrapose! a
+            rw [h_1]
+            simp only [beq_iff_eq, ne_eq]
+            norm_num
+            aesop?
+            · have k := zero_neq_2_zmod n n_lower_bound; sorry
+            · contrapose! a; sorry
+            · contrapose! a; aesop?
+        -/
+
+  /-
   · have coloring := SimpleGraph.Coloring.mk (G := cycle n)
       (λ x : ZMod n => 
         if x == 0 then (0 : Fin 3)
-        else if Even x then 1
+        else if x % 2 == 0 then 1
         else 2)
       (by 
         simp only [beq_iff_eq, ne_eq]
@@ -103,11 +241,29 @@ theorem chiCycle3 (n : ℕ) (h : Odd n) (n_lower_bound : n ≥ 4) : (cycle n).ch
         · by_cases w_zero : w = 0
           · rw [w_zero]
             simp only [even_zero, ite_true, ite_eq_left_iff, not_forall, exists_prop]
-            aesop <;> revert a <;> simp only [imp_false] <;> rw [← @ne_eq] <;> rw? --exact zero_neq_2
+            aesop <;> revert a <;> simp only [imp_false] <;> rw [← @ne_eq] --exact zero_neq_2
+            · rw [@ne_comm]; exact zero_neq_2
+            · rw [@ne_comm]; exact zero_neq_2
+            · norm_num
+            · rw [@ne_comm]; exact zero_neq_2
+            · intros zmodn; exact Ab
+
+          · rw [if_neg (c := w = 0)]
+            by_cases v_zero : v = 0
+            · rw [v_zero]
+              simp only [even_zero, ite_true]
+              by_cases w_even : Even (ZMod.cast w)
+              · rw [if_pos w_even]; norm_num
+              · rw [if_neg w_even, ← @ne_eq]; exact zero_neq_2
+
+            ·  
+        -/
       )
 
-    unfold SimpleGraph.Colorable
-    exact Nonempty.intro coloring
+
+      
+
+    
     
 
   · norm_num
