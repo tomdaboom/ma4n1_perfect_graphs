@@ -152,7 +152,7 @@ lemma cliqueNumberstuff
     have one_le_w := le_trans' upper n_bound
     exact Multiset.card_pos_iff_exists_mem.mp one_le_w
   
-  
+  use w \ {w_nonempty.some}
 
   
 
@@ -223,11 +223,21 @@ lemma four_gt_one (n : ℕ) (h : Fact (4 ≤ n)) : Fact (1 < n) := by
   norm_num
   linarith
   
+lemma two_ne_four {n : ℕ} (h : 2 < n) : (2 : ZMod n) = 4 -> False := by
+  simp only [imp_false]
+  rw [<- add_right_cancel_iff (a := -2)]
+  norm_num
+  contrapose! h
+  apply Nat.le_of_dvd zero_lt_two
+  symm at h
+  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 2 n).mp h
+
 lemma neg_two_ne_one {n : ℕ} (h : 3 < n) : (-2 : ZMod n) ≠ 1 := by
   rw[ne_eq, eq_comm, eq_neg_iff_add_eq_zero, add_comm, two_add_one_eq_three]
   contrapose! h
   apply Nat.le_of_dvd zero_lt_three
   exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 3 n).mp h
+
 
 theorem chiCycle3 (n : ℕ) (h : Odd n) : (cycle n).chromaticNumber = 3 := by
   sorry
