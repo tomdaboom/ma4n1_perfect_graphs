@@ -356,7 +356,7 @@ lemma one_one_to_minus_two {n : ℕ} {x y z : ZMod n} : (x - y = 1) → (z - x =
   rwa [<- sub_eq_add_neg]
 
 --If n ≥ 4 then it is certainly > 1
---This is required due to how "Fact" is used in the non-triviality of Z mod n 
+--This is required due to how "Fact" is used in the non-triviality of Z mod n
 lemma four_gt_one (n : ℕ) (h : Fact (4 ≤ n)) : Fact (1 < n) := by
   have h' := Fact.elim h
   refine fact_iff.mpr ?_
@@ -684,7 +684,7 @@ theorem cycle5Walktailnodup : cycle5Walk.support.tail.Nodup := by
     List.mem_cons, List.mem_singleton, one_ne_zero, or_false, List.not_mem_nil, not_false_eq_true,
     List.nodup_nil, and_self, and_true]
   aesop
-  --1 ≠ 2 
+  --1 ≠ 2
   · rw [<- add_right_cancel_iff (a := -1)] at h
     norm_num at h
     exact zero_ne_one' h' h
@@ -769,8 +769,9 @@ theorem cycle5WalkisTrail : cycle5Walk.IsTrail := by
 
 
 
--- This is defined in simplegraph.walk.connectivity file but we ran into issues so have copied across the isCycle definition 
-universe u
+-- This is defined in simplegraph.walk.connectivity file but we ran into issues so have copied across the isCycle definition
+universe u  symm at h
+  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 4 n).mp h
 variable {V : Type u}
 variable (G : SimpleGraph V)
 theorem isCycle_def {u : V} (p : G.Walk u u) :

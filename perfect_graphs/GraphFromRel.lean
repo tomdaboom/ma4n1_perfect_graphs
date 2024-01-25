@@ -357,22 +357,13 @@ theorem cycle5notPerfect : ¬ isPerfect (cycle 5) := by
   exact cycle5hasOddHole
 
 
-
-lemma two_ne_four {n : ℕ} (h : 2 < n) : (2 : ZMod n) = 4 -> False := by
-  simp only [imp_false]
-  rw [<- add_right_cancel_iff (a := -2)]
-  norm_num
-  contrapose! h
-  apply Nat.le_of_dvd zero_lt_two
-  symm at h
-  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 2 n).mp h
-
+@[aesop]
 lemma zero_ne_one_ {n : ℕ} (h': Nontrivial (ZMod n)): (0: ZMod n) = 1 -> False := by
   simp_all only [zero_ne_one]
 
 
 
-
+@[aesop]
 lemma zero_ne_two_ {n : ℕ} (h : 2 < n): (0 : ZMod n) = 2 -> False := by
   simp only [imp_false]
   contrapose! h
@@ -394,24 +385,33 @@ lemma zero_ne_four_ {n : ℕ} (h : 4 < n): (0 : ZMod n) = 4 -> False := by
   symm at h
   exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 4 n).mp h
 
+lemma zero_ne_five_ {n : ℕ} (h : 5 < n): (0 : ZMod n) = 5 -> False := by
+  simp only [imp_false]
+  contrapose! h
+  have zero_lt_five : 0<5 := by simp_all only [Nat.zero_lt_succ]
+  apply Nat.le_of_dvd zero_lt_five
+  symm at h
+  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 5 n).mp h
+
+lemma zero_ne_six_ {n : ℕ} (h : 6 < n): (0 : ZMod n) = 6 -> False := by
+  simp only [imp_false]
+  contrapose! h
+  have zero_lt_six : 0<6 := by simp_all only [Nat.zero_lt_succ]
+  apply Nat.le_of_dvd zero_lt_six
+  symm at h
+  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 6 n).mp h
 
 -- graph with induced c7
+-- definition could have been more compact but it changes the proof so did not change
 def funkyGraph  : SimpleGraph (ZMod 12) :=
   SimpleGraph.fromRel (λ x y =>
-   if x.val<7 ∧ y.val<7 then
-   x-y=1
-   else if x.val=6 ∧ y.val=0 then True
-   else if x.val=0 ∧ y.val=9 then True
-   else if x.val=0 ∧ y.val=9 then True
-   else if x.val=0 ∧ y.val=9 then True
-   else if x.val=0 ∧ y.val=9 then True
-   else if x.val=0 ∧ y.val=9 then True
-   else if x.val=0 ∧ y.val=9 then True
-   else if x.val=0 ∧ y.val=9 then True
-   else if x.val=0 ∧ y.val=9 then True
-   else if x.val=0 ∧ y.val=9 then True
-   else if x.val=0 ∧ y.val=9 then True
-   else False )
+   ((x.val<7 ∧ y.val<7) ∧ x-y=1) ∨
+  (x=0 ∧ y = 6) -- edge to finish of cycle
+  ∨ (x=0 ∧ y=9)
+  ∨ (x=2 ∧ y=11)
+  ∨ (x=4 ∧ y=9)
+  ∨ (x=10 ∧ y=9)
+  ∨ (x=2 ∧ y=9))
 
 
 lemma twelve_gt_one : Fact (1 < 12) := by
@@ -427,7 +427,7 @@ lemma  zmod12nontrivial : Nontrivial (ZMod 12):= by
 lemma  adjacenciesforc7infunckygraph (u v : ZMod 12) (h: v-u=1∧ u.val <7∧ v.val<7 ): funkyGraph.Adj u v := by
   unfold funkyGraph
   have h' := zmod12nontrivial
-  simp_all only [ZMod.val_eq_zero, ite_false, fromRel_adj, ne_eq, and_self, ite_self, ite_true, or_true, and_true]
+  simp_all only [fromRel_adj, ne_eq, and_self, true_and, true_or, or_true, and_true]
   intro a
   simp_all only [sub_self, zero_ne_one]
 
@@ -466,31 +466,58 @@ lemma  sixminusfiveandlessthan7 : (6: ZMod 12)-5=1 ∧ (5 : ZMod 12).val<7 ∧ (
   constructor
   <;>  exact Nat.compare_eq_lt.mp rfl
 
-lemma  seveminussixandlessthan7 : (7: ZMod 12)-6=1 ∧ (6 : ZMod 12).val<7 ∧ (7 : ZMod 12).val <7 := by
-  unfold ZMod.val
-  norm_num
-  constructor
-  <;>  exact Nat.compare_eq_lt.mp rfl
 
-lemma sixconntectedtozero : funkyGraph.Adj 6 0 := by
+
+lemma sixconnectedtozero : funkyGraph.Adj 6 0 := by
   unfold funkyGraph
-  aesop?
-  sorry
+  have sixlessthan12: 6<12 := by exact Nat.compare_eq_lt.mp rfl
+  simp_all only [fromRel_adj, ne_eq, and_self, true_and, true_or, or_true, and_true]
+  rw [← @ne_eq]
+  symm
+  apply (zero_ne_six_  sixlessthan12)
+
+
+
+
+
+
+  -- aesop_graph
+  -- · symm at a
+  --   apply  (zero_ne_six_  sixlessthan12) at a
+  --   exact a
+  -- ·
+  -- ·
+
+
 
 
 def funkyGraphc7Walk : funkyGraph.Walk 0 0  :=
   (adjacenciesforc7infunckygraph 0 1 oneminuszeroandlessthan7).toWalk.append
-  ((adjacenciesforc7infunckygraph 1 2 oneminuszeroandlessthan7).toWalk.append
-  ((adjacenciesforc7infunckygraph 2 3 twominusoneandlessthan7).toWalk.append
-  ((adjacenciesforc7infunckygraph 3 4 threeminustwoandlessthan7).toWalk.append
-  ((adjacenciesforc7infunckygraph 4 5 fourminusthreeandlessthan7).toWalk.append
-  ((adjacenciesforc7infunckygraph 5 6).toWalk.append
-  ().toWalk)))
+  ((adjacenciesforc7infunckygraph 1 2 twominusoneandlessthan7).toWalk.append
+  ((adjacenciesforc7infunckygraph 2 3 threeminustwoandlessthan7).toWalk.append
+  ((adjacenciesforc7infunckygraph 3 4 fourminusthreeandlessthan7).toWalk.append
+  ((adjacenciesforc7infunckygraph 4 5 fiveminusfourandlessthan7).toWalk.append
+  ((adjacenciesforc7infunckygraph 5 6 sixminusfiveandlessthan7).toWalk.append
+  (sixconnectedtozero.toWalk))))))
 
 
+lemma funkyGraphWalkisTrail : funkyGraphc7Walk.IsTrail := by
+  have h' := zmod12nontrivial
+  unfold funkyGraphc7Walk
+  aesop
+  simp_all only []
 
-def TestGCycle5walkisCycle : TestGCycle5walk.IsCycle := by
-  unfold TestGCycle5walk
+lemma funkyGraphWalkisnotNill
+
+lemma funkyGraphWalktailnodup
+
+lemma  funkyGraphWalkIsCycle : funkyGraphc7Walk.IsCycle := by
+  rw [isCycle_def]
+  constructor
+  apply funkyGraphWalkisTrail
+  constructor
+  apply funkyGraphWalkisnotNill
+  apply funkyGraphWalktailnodup
 
   sorry
   done
