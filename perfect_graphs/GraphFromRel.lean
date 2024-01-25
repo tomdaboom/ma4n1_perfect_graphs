@@ -161,6 +161,8 @@ def  cycle5Walk : SimpleGraph.Walk (cycle 5) 0 0  :=
 
 
 
+
+
 theorem cycle5WalkisnotNill : cycle5Walk ≠ SimpleGraph.Walk.nil := by
   unfold cycle5Walk
   simp_all only [SimpleGraph.Walk.cons_append, SimpleGraph.Walk.nil_append, ne_eq, not_false_eq_true]
@@ -356,62 +358,140 @@ theorem cycle5notPerfect : ¬ isPerfect (cycle 5) := by
 
 
 
-lemma zero_ne_one' (h': Nontrivial (ZMod 5)) (h: (0: ZMod 5) = 1) : False := by
+lemma two_ne_four {n : ℕ} (h : 2 < n) : (2 : ZMod n) = 4 -> False := by
+  simp only [imp_false]
+  rw [<- add_right_cancel_iff (a := -2)]
+  norm_num
+  contrapose! h
+  apply Nat.le_of_dvd zero_lt_two
+  symm at h
+  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 2 n).mp h
+
+lemma zero_ne_one_ {n : ℕ} (h': Nontrivial (ZMod n)): (0: ZMod n) = 1 -> False := by
   simp_all only [zero_ne_one]
 
 
 
-lemma zero_ne_two : (0 : ZMod 5) = 2 -> False := by
-  have h : 2<5 := by norm_num
+
+lemma zero_ne_two_ {n : ℕ} (h : 2 < n): (0 : ZMod n) = 2 -> False := by
   simp only [imp_false]
   contrapose! h
   apply Nat.le_of_dvd zero_lt_two
   symm at h
-  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 2 5).mp h
+  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 2 n).mp h
 
-lemma zero_ne_three : (0 : ZMod 5) = 3 -> False := by
-  have h : 3<5 := by norm_num
+lemma zero_ne_three_ {n : ℕ} (h : 3 < n): (0 : ZMod n) = 3 -> False := by
   simp only [imp_false]
   contrapose! h
   apply Nat.le_of_dvd zero_lt_three
   symm at h
-  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 3 5).mp h
+  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 3 n).mp h
 
-lemma zero_ne_four : (0 : ZMod 5) = 4 -> False := by
-  have h : 4<5 := by norm_num
+lemma zero_ne_four_ {n : ℕ} (h : 4 < n): (0 : ZMod n) = 4 -> False := by
   simp only [imp_false]
   contrapose! h
   apply Nat.le_of_dvd zero_lt_four
   symm at h
-  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 4 5).mp h
+  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 4 n).mp h
 
 
-
-
-def oddHoleTestG  : SimpleGraph (ZMod 6) :=
+-- graph with induced c7
+def funkyGraph  : SimpleGraph (ZMod 12) :=
   SimpleGraph.fromRel (λ x y =>
-   if x.val<5 ∧ y.val<5 then
+   if x.val<7 ∧ y.val<7 then
    x-y=1
-   else if x.val=5 ∧ y.val=0 then True
+   else if x.val=6 ∧ y.val=0 then True
+   else if x.val=0 ∧ y.val=9 then True
+   else if x.val=0 ∧ y.val=9 then True
+   else if x.val=0 ∧ y.val=9 then True
+   else if x.val=0 ∧ y.val=9 then True
+   else if x.val=0 ∧ y.val=9 then True
+   else if x.val=0 ∧ y.val=9 then True
+   else if x.val=0 ∧ y.val=9 then True
+   else if x.val=0 ∧ y.val=9 then True
+   else if x.val=0 ∧ y.val=9 then True
+   else if x.val=0 ∧ y.val=9 then True
    else False )
 
 
-def adjacenciesTestG (u v : ZMod 6) (h: u-v=1) (h2: (u.val<5 ∧ v.val<5)): oddHoleTestG.Adj u v := by
-  cases u; cases v;
+lemma twelve_gt_one : Fact (1 < 12) := by
+  refine fact_iff.mpr ?_
+  refine Nat.succ_le_iff.mp ?_
+  norm_num
+
+
+lemma  zmod12nontrivial : Nontrivial (ZMod 12):= by
+  have h := twelve_gt_one
+  exact ZMod.nontrivial 12
+
+lemma  adjacenciesforc7infunckygraph (u v : ZMod 12) (h: v-u=1∧ u.val <7∧ v.val<7 ): funkyGraph.Adj u v := by
+  unfold funkyGraph
+  have h' := zmod12nontrivial
+  simp_all only [ZMod.val_eq_zero, ite_false, fromRel_adj, ne_eq, and_self, ite_self, ite_true, or_true, and_true]
+  intro a
+  simp_all only [sub_self, zero_ne_one]
+
+
+lemma uplusoneminusuandlessthan7 {n : ℕ }(u : ZMod n): (u+1)-u=1 := by
+  simp_all only [add_sub_cancel']
+
+lemma oneminuszeroandlessthan7 : (1: ZMod 12)-0=1 ∧ (0 : ZMod 12).val<7 ∧ (1 : ZMod 12).val <7 := by
+  unfold ZMod.val
+  simp_all only [sub_zero, Fin.val_zero, Nat.zero_lt_succ, Fin.val_one, Nat.one_lt_succ_succ, and_self]
+
+lemma  twominusoneandlessthan7 : (2: ZMod 12)-1=1 ∧ (1 : ZMod 12).val<7 ∧ (2 : ZMod 12).val <7   := by
+  unfold ZMod.val
+  norm_num
+
+lemma  threeminustwoandlessthan7 : (3: ZMod 12)-2=1 ∧ (2 : ZMod 12).val<7 ∧ (3 : ZMod 12).val <7 := by
+  unfold ZMod.val
+  norm_num
+  exact Nat.compare_eq_lt.mp rfl
+
+lemma  fourminusthreeandlessthan7 : (4: ZMod 12)-3=1 ∧ (3 : ZMod 12).val<7 ∧ (4 : ZMod 12).val <7 := by
+  unfold ZMod.val
+  norm_num
+  constructor
+  <;>  exact Nat.compare_eq_lt.mp rfl
+
+lemma  fiveminusfourandlessthan7 : (5: ZMod 12)-4=1 ∧ (4 : ZMod 12).val<7 ∧ (5 : ZMod 12).val <7 := by
+  unfold ZMod.val
+  norm_num
+  constructor
+  <;>  exact Nat.compare_eq_lt.mp rfl
+
+lemma  sixminusfiveandlessthan7 : (6: ZMod 12)-5=1 ∧ (5 : ZMod 12).val<7 ∧ (6 : ZMod 12).val <7 := by
+  unfold ZMod.val
+  norm_num
+  constructor
+  <;>  exact Nat.compare_eq_lt.mp rfl
+
+lemma  seveminussixandlessthan7 : (7: ZMod 12)-6=1 ∧ (6 : ZMod 12).val<7 ∧ (7 : ZMod 12).val <7 := by
+  unfold ZMod.val
+  norm_num
+  constructor
+  <;>  exact Nat.compare_eq_lt.mp rfl
+
+lemma sixconntectedtozero : funkyGraph.Adj 6 0 := by
+  unfold funkyGraph
+  aesop?
   sorry
 
 
-def TestGCycle5walk : oddHoleTestG.Walk 0 0  :=
-  (adjacenciesTestG 0 1).toWalk.append
-  ((adjacenciesTestG 1 2).toWalk.append
-  ((adjacenciesTestG 2 3).toWalk.append
-  ((adjacenciesTestG 3 4).toWalk.append
-  (adjacenciesTestG  4 0).toWalk)))
+def funkyGraphc7Walk : funkyGraph.Walk 0 0  :=
+  (adjacenciesforc7infunckygraph 0 1 oneminuszeroandlessthan7).toWalk.append
+  ((adjacenciesforc7infunckygraph 1 2 oneminuszeroandlessthan7).toWalk.append
+  ((adjacenciesforc7infunckygraph 2 3 twominusoneandlessthan7).toWalk.append
+  ((adjacenciesforc7infunckygraph 3 4 threeminustwoandlessthan7).toWalk.append
+  ((adjacenciesforc7infunckygraph 4 5 fourminusthreeandlessthan7).toWalk.append
+  ((adjacenciesforc7infunckygraph 5 6).toWalk.append
+  ().toWalk)))
 
 
 
 def TestGCycle5walkisCycle : TestGCycle5walk.IsCycle := by
   unfold TestGCycle5walk
+
   sorry
   done
 
