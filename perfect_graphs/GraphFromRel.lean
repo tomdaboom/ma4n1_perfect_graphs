@@ -11,9 +11,8 @@ import Mathlib.Combinatorics.SimpleGraph.Connectivity
 namespace rels
 open SimpleGraph
 open Subgraph
-def cycleG (n : ℕ) : SimpleGraph (ZMod n) :=
+def cycle (n : ℕ) : (SimpleGraph (ZMod n)) :=
   SimpleGraph.fromRel (λ x y => x-y = 1)
-
 #check cycleG 5
 
 def CompleteG (n : ℕ) : SimpleGraph (ZMod n) :=
@@ -84,8 +83,8 @@ def cylceG.Coloring {n : ℕ}: (cycleG n ).Coloring (ZMod 3) :=
 #eval hasNCycle cycle5 5
 
 
-def cycle5  : SimpleGraph (ZMod 5) :=
-  SimpleGraph.fromRel (λ x y => x-y = 1)
+-- def cycle5  : SimpleGraph (ZMod 5) :=
+--   SimpleGraph.fromRel (λ x y => x-y = 1)
 
 
 
@@ -115,8 +114,8 @@ def zmod5nontrivial : Nontrivial (ZMod 5):= by
   exact ZMod.nontrivial 5
 
 
-def zerotoone : cycle5.Adj 0 1 := by
-  unfold cycle5
+def zerotoone : (cycle 5).Adj 0 1 := by
+  unfold cycle
   have h := zmod5nontrivial
 
   rw [SimpleGraph.adj_iff_exists_edge]
@@ -128,8 +127,8 @@ def zerotoone : cycle5.Adj 0 1 := by
 
   }
 
-def adjacencies (u v : ZMod 5)  (h: v-u=1  ): cycle5.Adj u v := by
-  unfold cycle5
+def adjacencies (u v : ZMod 5)  (h: v-u=1  ): (cycle 5).Adj u v := by
+  unfold cycle
   have h' := zmod5nontrivial
   simp_all only [SimpleGraph.fromRel_adj, ne_eq, or_true, and_true]
   intro
@@ -151,7 +150,7 @@ lemma uplusoneminusu (u : ZMod 5): u+1-u=1 := by
 
 
 
-def  cycle5Walk : SimpleGraph.Walk cycle5 0 0  :=
+def  cycle5Walk : SimpleGraph.Walk (cycle 5) 0 0  :=
   (adjacencies 0 1  oneminuszero).toWalk.append
   ((adjacencies 1 2 twominusone).toWalk.append
   ((adjacencies 2 3 threeminustwo).toWalk.append
@@ -304,7 +303,7 @@ def cycle5WalkLength5 : cycle5Walk.length=5 := by
 
 
 
-theorem cycle5hasc5 : hasNCycle cycle5 5  := by
+theorem cycle5hasc5 : hasNCycle (cycle 5) 5  := by
   unfold hasNCycle
   use 0
   use cycle5Walk
@@ -318,7 +317,7 @@ def hasOddHole {V : Type} (G : SimpleGraph V) : Prop :=
   ∃ n : ℕ, hasNCycle G (2*n+5) --odd cycle of length ≥ 5, using that 0 ∈ ℕ in Lean
 
 
-theorem cycle5hasOddHole : hasOddHole cycle5 := by
+theorem cycle5hasOddHole : hasOddHole (cycle 5) := by
   unfold hasOddHole
   use 0
   exact cycle5hasc5
@@ -348,7 +347,7 @@ theorem strongPerfectGraphTheorem {V : Type} (G : SimpleGraph V) : isPerfect G �
   sorry
 
 
-theorem cycle5notPerfect : ¬ isPerfect cycle5 := by
+theorem cycle5notPerfect : ¬ isPerfect (cycle 5) := by
   rw [strongPerfectGraphTheorem]
   simp only [not_and_or]
   rw [not_not]
@@ -357,6 +356,34 @@ theorem cycle5notPerfect : ¬ isPerfect cycle5 := by
 
 
 
+lemma zero_ne_one' (h': Nontrivial (ZMod 5)) (h: (0: ZMod 5) = 1) : False := by
+  simp_all only [zero_ne_one]
+
+
+
+lemma zero_ne_two : (0 : ZMod 5) = 2 -> False := by
+  have h : 2<5 := by norm_num
+  simp only [imp_false]
+  contrapose! h
+  apply Nat.le_of_dvd zero_lt_two
+  symm at h
+  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 2 5).mp h
+
+lemma zero_ne_three : (0 : ZMod 5) = 3 -> False := by
+  have h : 3<5 := by norm_num
+  simp only [imp_false]
+  contrapose! h
+  apply Nat.le_of_dvd zero_lt_three
+  symm at h
+  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 3 5).mp h
+
+lemma zero_ne_four : (0 : ZMod 5) = 4 -> False := by
+  have h : 4<5 := by norm_num
+  simp only [imp_false]
+  contrapose! h
+  apply Nat.le_of_dvd zero_lt_four
+  symm at h
+  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 4 5).mp h
 
 
 
@@ -369,7 +396,7 @@ def oddHoleTestG  : SimpleGraph (ZMod 6) :=
    else False )
 
 
-def adjacenciesTestG (u v : ZMod 5) (h: u-v=1) (h2: (u.val<5 ∧ v.val<5)): oddHoleTestG.Adj u v := by
+def adjacenciesTestG (u v : ZMod 6) (h: u-v=1) (h2: (u.val<5 ∧ v.val<5)): oddHoleTestG.Adj u v := by
   cases u; cases v;
   sorry
 
