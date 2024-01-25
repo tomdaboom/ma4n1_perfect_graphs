@@ -562,6 +562,35 @@ theorem strongPerfectGraphTheorem {V : Type} (G : SimpleGraph V)
  : isPerfect G ↔ ¬ hasOddHole G ∧ ¬ hasOddHole Gᶜ := by
   sorry
 
+
+--Proving G is perfect → Gᶜ is perfect using the Strong Perfect Graph Theorem
+theorem weakPerfectGraphTheoremForward {V : Type} (G : SimpleGraph V): isPerfect G → isPerfect (compl G):= by
+  intro h
+  rw [@strongPerfectGraphTheorem]
+  rw [@strongPerfectGraphTheorem] at h
+  refine And.symm ?_
+  rw[compl_compl]
+  apply h
+
+--Prove other direction using Gᶜᶜ = G
+theorem weakPerfectGraphTheoremBackward {V : Type} (G : SimpleGraph V): isPerfect (compl G) → isPerfect (G):= by
+   intro h
+   apply (weakPerfectGraphTheoremForward Gᶜ) at h
+   rw [compl_compl] at h
+   apply h
+
+--Unify both directions into the Weak Perfect Graph Theorem
+theorem weakPerfectGraphTheorem {V : Type} (G : SimpleGraph V) : isPerfect G ↔  isPerfect (compl G)
+:= by
+  refine Iff.symm ((fun {a b} => iff_def.mpr) {
+    left := by apply weakPerfectGraphTheoremBackward
+    right := by apply weakPerfectGraphTheoremForward
+  })
+
+--------------------------------------------------------------------------
+--SECTION: EXAMPLE APPLICATION OF SPGT
+--------------------------------------------------------------------------
+
 /- We now prove that the cycle on 5 vertices is perfect
 using the statement of the Strong Perfect Graph Theorem above -/
 
@@ -585,7 +614,7 @@ lemma adjacencies (u v : ZMod 5)  (h: v-u=1  ): (cycle 5).Adj u v := by
 
 
 
-
+--These are all used to construct our graph
 lemma oneminuszero : (1: ZMod 5)-0=1 := by norm_num
 lemma  twominusone : (2: ZMod 5)-1=1  := by norm_num
 lemma  threeminustwo : (3: ZMod 5)-2=1  := by norm_num
@@ -594,6 +623,7 @@ lemma  zerominusfour : (0: ZMod 5)-4=1  := by
   simp_all only [zero_sub]
   apply Eq.refl
 
+--Generic vertex relation
 lemma uplusoneminusu (n : ℕ) (u : ZMod n): u+1-u=1 := by
   simp_all only [add_sub_cancel']
 
@@ -758,7 +788,6 @@ theorem cycle5hasOddHole : hasOddHole (cycle 5) := by
   exact cycle5hasc5
 
 
--- repeat definitions
 
 theorem cycle5notPerfect : ¬ isPerfect (cycle 5) := by
   rw [strongPerfectGraphTheorem]
@@ -767,29 +796,6 @@ theorem cycle5notPerfect : ¬ isPerfect (cycle 5) := by
   refine Or.inl ?h
   exact cycle5hasOddHole
 
---Proving G is perfect → Gᶜ is perfect using the Strong Perfect Graph Theorem
-theorem weakPerfectGraphTheoremForward {V : Type} (G : SimpleGraph V): isPerfect G → isPerfect (compl G):= by
-  intro h
-  rw [@strongPerfectGraphTheorem]
-  rw [@strongPerfectGraphTheorem] at h
-  refine And.symm ?_
-  rw[compl_compl]
-  apply h
-
---Prove other direction using Gᶜᶜ = G
-theorem weakPerfectGraphTheoremBackward {V : Type} (G : SimpleGraph V): isPerfect (compl G) → isPerfect (G):= by
-   intro h
-   apply (weakPerfectGraphTheoremForward Gᶜ) at h
-   rw [compl_compl] at h
-   apply h
-
---Unify both directions into the Weak Perfect Graph Theorem
-theorem weakPerfectGraphTheorem {V : Type} (G : SimpleGraph V) : isPerfect G ↔  isPerfect (compl G)
-:= by
-  refine Iff.symm ((fun {a b} => iff_def.mpr) {
-    left := by apply weakPerfectGraphTheoremBackward
-    right := by apply weakPerfectGraphTheoremForward
-  })
 
 
 
