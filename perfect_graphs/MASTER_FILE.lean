@@ -594,17 +594,20 @@ theorem weakPerfectGraphTheorem {V : Type} (G : SimpleGraph V) : isPerfect G ↔
 /- We now prove that the cycle on 5 vertices is perfect
 using the statement of the Strong Perfect Graph Theorem above -/
 
+/-Use the fact that 5 > 1 to show Z mod 5 is non-trivial
+As we're working on the 5 cycle, Z mod 5 will be the data type of our vertices for this section-/
 lemma five_gt_one : Fact (1 < 5) := by
   refine fact_iff.mpr ?_
   refine Nat.succ_le_iff.mp ?_
   norm_num
 
-
+--Needed to show adjacencies
 lemma zmod5nontrivial : Nontrivial (ZMod 5):= by
   have h := five_gt_one
   exact ZMod.nontrivial 5
 
 
+--Any two vertices that are 1 apart (mod 5) in the cycle are adjacent
 lemma adjacencies (u v : ZMod 5)  (h: v-u=1  ): (cycle 5).Adj u v := by
   unfold cycle
   have h' := zmod5nontrivial
@@ -628,7 +631,7 @@ lemma uplusoneminusu (n : ℕ) (u : ZMod n): u+1-u=1 := by
   simp_all only [add_sub_cancel']
 
 
-
+--Use SimpleGraph's Walk type to construct a cycle of length 5 and show the relevant vertices are adjacent
 def  cycle5Walk : SimpleGraph.Walk (cycle 5) 0 0  :=
   (adjacencies 0 1  oneminuszero).toWalk.append
   ((adjacencies 1 2 twominusone).toWalk.append
@@ -636,10 +639,12 @@ def  cycle5Walk : SimpleGraph.Walk (cycle 5) 0 0  :=
   ((adjacencies 3 4 fourminusthree).toWalk.append
   (adjacencies  4 0 zerominusfour).toWalk)))
 
+--Show our cycle 5 is not "nil" i.e. not a walk from a vertex to itself
 lemma cycle5WalkisnotNill : cycle5Walk ≠ SimpleGraph.Walk.nil := by
   unfold cycle5Walk
   simp_all only [SimpleGraph.Walk.cons_append, SimpleGraph.Walk.nil_append, ne_eq, not_false_eq_true]
 
+--The following 4 lemmas relate to which of the elements of Z mod 5 0 is not equal to
 lemma zero_ne_one' (h': Nontrivial (ZMod 5)) (h: (0: ZMod 5) = 1) : False := by
   simp_all only [zero_ne_one]
 
@@ -667,6 +672,10 @@ lemma zero_ne_four : (0 : ZMod 5) = 4 -> False := by
   symm at h
   exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 4 5).mp h
 
+/- Support = the list of vertices the walk visits in order
+Tail of the support = the final vertex the walk visits
+This theorem checks that vertices are not visited more than once in the walk (except maybe the start and end vertex of the cycle)
+To do so it must check that there are no equivalences in the vertices mod 5 -/
 theorem cycle5Walktailnodup : cycle5Walk.support.tail.Nodup := by
   unfold cycle5Walk
   have h' := zmod5nontrivial
@@ -675,44 +684,56 @@ theorem cycle5Walktailnodup : cycle5Walk.support.tail.Nodup := by
     List.mem_cons, List.mem_singleton, one_ne_zero, or_false, List.not_mem_nil, not_false_eq_true,
     List.nodup_nil, and_self, and_true]
   aesop
+  --1 ≠ 2 
   · rw [<- add_right_cancel_iff (a := -1)] at h
     norm_num at h
     exact zero_ne_one' h' h
-
+  --1 ≠ 3
   · rw [<- add_right_cancel_iff (a := -1)] at h
     norm_num at h
     exact zero_ne_two h
+  --1 ≠ 4
   · rw [<- add_right_cancel_iff (a := -1)] at h
     norm_num at h
     exact zero_ne_three h
+  --2 ≠ 3
   · rw [<- add_right_cancel_iff (a := -2)] at h
     norm_num at h
     exact zero_ne_one' h' h
-
+  --2 ≠ 4
   · rw [<- add_right_cancel_iff (a := -2)] at h
     norm_num at h
     exact zero_ne_two h
+  --0 ≠ 2
   · symm at h
     exact zero_ne_two h
+    --3 ≠ 4
   · rw [<- add_right_cancel_iff (a := -3)] at h
     norm_num at h
     exact zero_ne_one' h' h
+  --0 ≠ 3
   · symm at h
     exact zero_ne_three h
+  --0 ≠ 4
   · symm at a
     exact zero_ne_four a
   done
 
+/-Shows cycle 5 is a trail (a walk with no repeating edges)
+Again this requires proving a lot of non-equivalences in Z mod 5
+Many of the intermediary goals are combinations of non-equalities and so are not commented -/
 theorem cycle5WalkisTrail : cycle5Walk.IsTrail := by
   have h' := zmod5nontrivial
   unfold cycle5Walk
   aesop
   · exact zero_ne_three (id left.symm)
+  --3 ≠ 0
   · symm at h
     exact zero_ne_three h
   · rw [<- add_right_cancel_iff (a := -2)] at left
     norm_num at left
     exact zero_ne_two left
+  --2 ≠ 4
   · rw [<- add_right_cancel_iff (a := -2)] at h
     norm_num at h
     exact zero_ne_two h
@@ -723,6 +744,7 @@ theorem cycle5WalkisTrail : cycle5Walk.IsTrail := by
   · rw [<- add_right_cancel_iff (a := -1)] at left
     norm_num at left
     exact zero_ne_two left
+    --1 ≠ 3
   · rw [<- add_right_cancel_iff (a := -1)] at h
     norm_num at h
     exact zero_ne_two h
@@ -734,11 +756,12 @@ theorem cycle5WalkisTrail : cycle5Walk.IsTrail := by
     exact zero_ne_three left
   · symm at right
     exact zero_ne_two right
-  · exact zero_ne_two h
+  · exact zero_ne_two h --0 ≠ 2
   · exact zero_ne_two left
   · exact zero_ne_three left
   · exact zero_ne_three left
   · exact zero_ne_four left
+  --1 ≠ 4
   · rw [<- add_right_cancel_iff (a := -1)] at h
     norm_num at h
     exact zero_ne_three h
@@ -746,7 +769,7 @@ theorem cycle5WalkisTrail : cycle5Walk.IsTrail := by
 
 
 
--- defined in simplegraph.walk.connectivity file but lean couldnt find it
+-- This is defined in simplegraph.walk.connectivity file but we ran into issues so have copied across the isCycle definition 
 universe u
 variable {V : Type u}
 variable (G : SimpleGraph V)
@@ -755,6 +778,7 @@ theorem isCycle_def {u : V} (p : G.Walk u u) :
   Iff.intro (fun h => ⟨h.1.1, h.1.2, h.2⟩) fun h => ⟨⟨h.1, h.2.1⟩, h.2.2⟩
 
 
+--Combine all elements to show a cycle of length 5 is a cycle
 def cycle5WalkisCycle : cycle5Walk.IsCycle := by
   rw [isCycle_def]
   constructor
@@ -765,12 +789,12 @@ def cycle5WalkisCycle : cycle5Walk.IsCycle := by
 
   done
 
-
+--Show the length of a 5 cycle is 5
 def cycle5WalkLength5 : cycle5Walk.length=5 := by
   apply Eq.refl (SimpleGraph.Walk.length cycle5Walk)
 
 
-
+--Use our definition, hasNCycle, to show a 5 cycle contains a 5 cycle
 theorem cycle5hasc5 : hasNCycle (cycle 5) 5  := by
   unfold hasNCycle
   use 0
@@ -781,14 +805,14 @@ theorem cycle5hasc5 : hasNCycle (cycle 5) 5  := by
   { apply cycle5WalkLength5
   }
 
-
+--Use our definition, hasOddHole, to show that the 5 cycle contains an odd hole
 theorem cycle5hasOddHole : hasOddHole (cycle 5) := by
   unfold hasOddHole
   use 0
   exact cycle5hasc5
 
 
-
+--Finally, use Strong Perfect Graph Theorem to show a 5 cycle is not a perfect graph
 theorem cycle5notPerfect : ¬ isPerfect (cycle 5) := by
   rw [strongPerfectGraphTheorem]
   simp only [not_and_or]
