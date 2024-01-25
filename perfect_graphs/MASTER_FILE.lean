@@ -562,7 +562,6 @@ theorem strongPerfectGraphTheorem {V : Type} (G : SimpleGraph V)
  : isPerfect G ↔ ¬ hasOddHole G ∧ ¬ hasOddHole Gᶜ := by
   sorry
 
---TBD Include example of non-perfect graph and prove using SPGT
 
 --Proving G is perfect → Gᶜ is perfect using the Strong Perfect Graph Theorem
 theorem weakPerfectGraphTheoremForward {V : Type} (G : SimpleGraph V): isPerfect G → isPerfect (compl G):= by
@@ -587,6 +586,216 @@ theorem weakPerfectGraphTheorem {V : Type} (G : SimpleGraph V) : isPerfect G ↔
     left := by apply weakPerfectGraphTheoremBackward
     right := by apply weakPerfectGraphTheoremForward
   })
+
+--------------------------------------------------------------------------
+--SECTION: EXAMPLE APPLICATION OF SPGT
+--------------------------------------------------------------------------
+
+/- We now prove that the cycle on 5 vertices is perfect
+using the statement of the Strong Perfect Graph Theorem above -/
+
+lemma five_gt_one : Fact (1 < 5) := by
+  refine fact_iff.mpr ?_
+  refine Nat.succ_le_iff.mp ?_
+  norm_num
+
+
+lemma zmod5nontrivial : Nontrivial (ZMod 5):= by
+  have h := five_gt_one
+  exact ZMod.nontrivial 5
+
+
+lemma adjacencies (u v : ZMod 5)  (h: v-u=1  ): (cycle 5).Adj u v := by
+  unfold cycle
+  have h' := zmod5nontrivial
+  simp_all only [SimpleGraph.fromRel_adj, ne_eq, or_true, and_true]
+  intro
+  simp_all only [sub_self, zero_ne_one]
+
+
+
+--These are all used to construct our graph
+lemma oneminuszero : (1: ZMod 5)-0=1 := by norm_num
+lemma  twominusone : (2: ZMod 5)-1=1  := by norm_num
+lemma  threeminustwo : (3: ZMod 5)-2=1  := by norm_num
+lemma  fourminusthree : (4: ZMod 5)-3=1  := by norm_num
+lemma  zerominusfour : (0: ZMod 5)-4=1  := by
+  simp_all only [zero_sub]
+  apply Eq.refl
+
+--Generic vertex relation
+lemma uplusoneminusu (n : ℕ) (u : ZMod n): u+1-u=1 := by
+  simp_all only [add_sub_cancel']
+
+
+
+def  cycle5Walk : SimpleGraph.Walk (cycle 5) 0 0  :=
+  (adjacencies 0 1  oneminuszero).toWalk.append
+  ((adjacencies 1 2 twominusone).toWalk.append
+  ((adjacencies 2 3 threeminustwo).toWalk.append
+  ((adjacencies 3 4 fourminusthree).toWalk.append
+  (adjacencies  4 0 zerominusfour).toWalk)))
+
+lemma cycle5WalkisnotNill : cycle5Walk ≠ SimpleGraph.Walk.nil := by
+  unfold cycle5Walk
+  simp_all only [SimpleGraph.Walk.cons_append, SimpleGraph.Walk.nil_append, ne_eq, not_false_eq_true]
+
+lemma zero_ne_one' (h': Nontrivial (ZMod 5)) (h: (0: ZMod 5) = 1) : False := by
+  simp_all only [zero_ne_one]
+
+lemma zero_ne_two : (0 : ZMod 5) = 2 -> False := by
+  have h : 2<5 := by norm_num
+  simp only [imp_false]
+  contrapose! h
+  apply Nat.le_of_dvd zero_lt_two
+  symm at h
+  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 2 5).mp h
+
+lemma zero_ne_three : (0 : ZMod 5) = 3 -> False := by
+  have h : 3<5 := by norm_num
+  simp only [imp_false]
+  contrapose! h
+  apply Nat.le_of_dvd zero_lt_three
+  symm at h
+  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 3 5).mp h
+
+lemma zero_ne_four : (0 : ZMod 5) = 4 -> False := by
+  have h : 4<5 := by norm_num
+  simp only [imp_false]
+  contrapose! h
+  apply Nat.le_of_dvd zero_lt_four
+  symm at h
+  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 4 5).mp h
+
+theorem cycle5Walktailnodup : cycle5Walk.support.tail.Nodup := by
+  unfold cycle5Walk
+  have h' := zmod5nontrivial
+  simp only [SimpleGraph.Walk.cons_append, SimpleGraph.Walk.nil_append,
+    SimpleGraph.Walk.support_cons, SimpleGraph.Walk.support_nil, List.tail_cons, List.nodup_cons,
+    List.mem_cons, List.mem_singleton, one_ne_zero, or_false, List.not_mem_nil, not_false_eq_true,
+    List.nodup_nil, and_self, and_true]
+  aesop
+  · rw [<- add_right_cancel_iff (a := -1)] at h
+    norm_num at h
+    exact zero_ne_one' h' h
+
+  · rw [<- add_right_cancel_iff (a := -1)] at h
+    norm_num at h
+    exact zero_ne_two h
+  · rw [<- add_right_cancel_iff (a := -1)] at h
+    norm_num at h
+    exact zero_ne_three h
+  · rw [<- add_right_cancel_iff (a := -2)] at h
+    norm_num at h
+    exact zero_ne_one' h' h
+
+  · rw [<- add_right_cancel_iff (a := -2)] at h
+    norm_num at h
+    exact zero_ne_two h
+  · symm at h
+    exact zero_ne_two h
+  · rw [<- add_right_cancel_iff (a := -3)] at h
+    norm_num at h
+    exact zero_ne_one' h' h
+  · symm at h
+    exact zero_ne_three h
+  · symm at a
+    exact zero_ne_four a
+  done
+
+theorem cycle5WalkisTrail : cycle5Walk.IsTrail := by
+  have h' := zmod5nontrivial
+  unfold cycle5Walk
+  aesop
+  · exact zero_ne_three (id left.symm)
+  · symm at h
+    exact zero_ne_three h
+  · rw [<- add_right_cancel_iff (a := -2)] at left
+    norm_num at left
+    exact zero_ne_two left
+  · rw [<- add_right_cancel_iff (a := -2)] at h
+    norm_num at h
+    exact zero_ne_two h
+  · symm at right
+    exact zero_ne_three right
+  · symm at left
+    exact zero_ne_two left
+  · rw [<- add_right_cancel_iff (a := -1)] at left
+    norm_num at left
+    exact zero_ne_two left
+  · rw [<- add_right_cancel_iff (a := -1)] at h
+    norm_num at h
+    exact zero_ne_two h
+  · rw [<- add_right_cancel_iff (a := -1)] at left
+    norm_num at left
+    exact zero_ne_two left
+  · rw [<- add_right_cancel_iff (a := -1)] at left
+    norm_num at left
+    exact zero_ne_three left
+  · symm at right
+    exact zero_ne_two right
+  · exact zero_ne_two h
+  · exact zero_ne_two left
+  · exact zero_ne_three left
+  · exact zero_ne_three left
+  · exact zero_ne_four left
+  · rw [<- add_right_cancel_iff (a := -1)] at h
+    norm_num at h
+    exact zero_ne_three h
+  done
+
+
+
+-- defined in simplegraph.walk.connectivity file but lean couldnt find it
+universe u
+variable {V : Type u}
+variable (G : SimpleGraph V)
+theorem isCycle_def {u : V} (p : G.Walk u u) :
+    p.IsCycle ↔ p.IsTrail ∧ p ≠ SimpleGraph.Walk.nil ∧ p.support.tail.Nodup :=
+  Iff.intro (fun h => ⟨h.1.1, h.1.2, h.2⟩) fun h => ⟨⟨h.1, h.2.1⟩, h.2.2⟩
+
+
+def cycle5WalkisCycle : cycle5Walk.IsCycle := by
+  rw [isCycle_def]
+  constructor
+  apply cycle5WalkisTrail
+  constructor
+  apply cycle5WalkisnotNill
+  apply cycle5Walktailnodup
+
+  done
+
+
+def cycle5WalkLength5 : cycle5Walk.length=5 := by
+  apply Eq.refl (SimpleGraph.Walk.length cycle5Walk)
+
+
+
+theorem cycle5hasc5 : hasNCycle (cycle 5) 5  := by
+  unfold hasNCycle
+  use 0
+  use cycle5Walk
+  constructor
+  {  apply cycle5WalkisCycle
+  }
+  { apply cycle5WalkLength5
+  }
+
+
+theorem cycle5hasOddHole : hasOddHole (cycle 5) := by
+  unfold hasOddHole
+  use 0
+  exact cycle5hasc5
+
+
+
+theorem cycle5notPerfect : ¬ isPerfect (cycle 5) := by
+  rw [strongPerfectGraphTheorem]
+  simp only [not_and_or]
+  rw [not_not]
+  refine Or.inl ?h
+  exact cycle5hasOddHole
+
 
 
 
