@@ -366,7 +366,7 @@ lemma  zmod12nontrivial : Nontrivial (ZMod 12):= by
   have h := twelve_gt_one
   exact ZMod.nontrivial 12
 
-
+@[simp]
 lemma zero_ne_a_ {n : ℕ} (a: ZMod n)(h : a.val < n ∧ 0<a.val): 0 = a -> False := by
   simp only [imp_false]
   contrapose! h
@@ -376,28 +376,30 @@ lemma zero_ne_a_ {n : ℕ} (a: ZMod n)(h : a.val < n ∧ 0<a.val): 0 = a -> Fals
 
 
 -- proof provided by damiano
+@[simp]
 lemma uminusvandlessthan7 {u v : ℕ}(h: u<7∧ v<7 ∧ u-v=1): (u: ZMod 12)-v=1 ∧ (v : ZMod 12).val<7 ∧ (u : ZMod 12).val <7 := by
   rcases h with ⟨h1, h2, h3⟩
   interval_cases u <;> interval_cases v <;> simp_all <;> norm_cast
 
 
 -- similar case bash to above
+@[simp]
 lemma lessthan12greaterthanzero {n : ℕ} (h : n > 0 ∧ n < 12) : (n : ZMod 12).val < 12 ∧ 0 < (n : ZMod 12).val  := by
   rcases h with ⟨h1, h2⟩
   interval_cases n <;> simp_all <;> norm_cast
 
-@[simp]
-lemma zero_ne_one_mod12 : (0: ZMod 12) = 1 -> False := by apply zero_ne_a_ 1 (by exact lessthan12greaterthanzero (by trivial))
-@[simp]
-lemma zero_ne_two_mod12 : (0: ZMod 12) = 2 -> False := by apply zero_ne_a_ 2 (by exact lessthan12greaterthanzero (by trivial))
-@[simp]
-lemma zero_ne_three_mod12 : (0: ZMod 12) = 3 -> False := by apply zero_ne_a_ 3 (by exact lessthan12greaterthanzero (by trivial))
-@[simp]
-lemma zero_ne_four_mod12 : (0: ZMod 12) = 4 -> False := by apply zero_ne_a_ 4 (by exact lessthan12greaterthanzero (by trivial))
-@[simp]
-lemma zero_ne_five_mod12 : (0: ZMod 12) = 5 -> False := by apply zero_ne_a_ 5 (by exact lessthan12greaterthanzero (by trivial))
-@[simp]
-lemma zero_ne_six_mod12 : (0: ZMod 12) = 6 -> False := by apply zero_ne_a_ 6 (by exact lessthan12greaterthanzero (by trivial))
+-- @[simp]
+-- lemma zero_ne_one_mod12 : (0: ZMod 12) = 1 -> False := by apply zero_ne_a_ 1 (by exact lessthan12greaterthanzero (by trivial))
+-- @[simp]
+-- lemma zero_ne_two_mod12 : (0: ZMod 12) = 2 -> False := by apply zero_ne_a_ 2 (by exact lessthan12greaterthanzero (by trivial))
+-- @[simp]
+-- lemma zero_ne_three_mod12 : (0: ZMod 12) = 3 -> False := by apply zero_ne_a_ 3 (by exact lessthan12greaterthanzero (by trivial))
+-- @[simp]
+-- lemma zero_ne_four_mod12 : (0: ZMod 12) = 4 -> False := by apply zero_ne_a_ 4 (by exact lessthan12greaterthanzero (by trivial))
+-- @[simp]
+-- lemma zero_ne_five_mod12 : (0: ZMod 12) = 5 -> False := by apply zero_ne_a_ 5 (by exact lessthan12greaterthanzero (by trivial))
+-- @[simp]
+-- lemma zero_ne_six_mod12 : (0: ZMod 12) = 6 -> False := by apply zero_ne_a_ 6 (by exact lessthan12greaterthanzero (by trivial))
 
 
 -- graph with induced c7
@@ -431,10 +433,7 @@ lemma sixconnectedtozero : funkyGraph.Adj 6 0 := by
   simp_all only [fromRel_adj, ne_eq, and_self, true_and, true_or, or_true, and_true]
   rw [← @ne_eq]
   symm
-
   apply (zero_ne_a_  6 (by exact lessthan12greaterthanzero (by trivial)))
-
-
 
 
 
@@ -448,8 +447,6 @@ def funkyGraphc7Walk : funkyGraph.Walk 0 0  :=
   (sixconnectedtozero.toWalk))))))
 
 
-
-
 lemma funkyGraphWalkisTrail : funkyGraphc7Walk.IsTrail := by
   have h' := zmod12nontrivial
 
@@ -459,8 +456,7 @@ lemma funkyGraphWalkisTrail : funkyGraphc7Walk.IsTrail := by
     List.mem_singleton, Sym2.eq, Sym2.rel_iff', Prod.mk.injEq, Prod.swap_prod_mk, and_true,
     true_and, List.mem_cons, one_ne_zero, false_and, or_false, zero_ne_one, false_or, and_false,zero_ne_six_mod12,zero_ne_five_mod12,
     zero_ne_four_mod12,zero_ne_three_mod12,zero_ne_two_mod12,zero_ne_one_mod12]
-
-  aesop
+  norm_cast
 
 
 
@@ -469,12 +465,7 @@ lemma funkyGraphWalktailnodup  : funkyGraphc7Walk.support.tail.Nodup := by
   simp only [Walk.cons_append, Walk.nil_append, Walk.support_cons, Walk.support_nil, List.tail_cons,
     List.nodup_cons, List.mem_cons, List.mem_singleton, List.not_mem_nil, not_false_eq_true,
     List.nodup_nil, and_self, and_true]
-  aesop?
-  · rw [<- add_right_cancel_iff (a := -1)] at h
-  · rw [<- add_right_cancel_iff (a := -1)] at h
-  ·
-
-
+  norm_cast
 
 
 
@@ -491,7 +482,6 @@ lemma  funkyGraphWalkIsCycle : funkyGraphc7Walk.IsCycle := by
   constructor
   apply funkyGraphWalkisnotNil
   apply funkyGraphWalktailnodup
-
 
   done
 
@@ -524,3 +514,4 @@ theorem funkyGraphnotPerfect : ¬ isPerfect funkyGraph := by
   rw [not_not]
   refine Or.inl ?h
   exact funkyGraphhasOddhole
+
