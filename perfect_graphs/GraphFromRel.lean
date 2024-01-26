@@ -356,63 +356,49 @@ theorem cycle5notPerfect : ¬ isPerfect (cycle 5) := by
   refine Or.inl ?h
   exact cycle5hasOddHole
 
+lemma twelve_gt_one : Fact (1 < 12) := by
+  refine fact_iff.mpr ?_
+  refine Nat.succ_le_iff.mp ?_
+  norm_num
 
-@[simp]
-lemma zero_ne_one_ {n : ℕ} (h': Nontrivial (ZMod n)): (0: ZMod n) = 1 -> False := by
-  simp_all only [zero_ne_one]
+
+lemma  zmod12nontrivial : Nontrivial (ZMod 12):= by
+  have h := twelve_gt_one
+  exact ZMod.nontrivial 12
 
 
-
-@[simp]
-lemma zero_ne_two_ {n : ℕ} (h : 2 < n): (0 : ZMod n) = 2 -> False := by
-  simp only [imp_false]
-  contrapose! h
-  apply Nat.le_of_dvd zero_lt_two
-  symm at h
-  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 2 n).mp h
-
-@[simp]
-
-lemma zero_ne_three_ {n : ℕ} (h : 3 < n): (0 : ZMod n) = 3 -> False := by
-  simp only [imp_false]
-  contrapose! h
-  apply Nat.le_of_dvd zero_lt_three
-  symm at h
-  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 3 n).mp h
-
-@[simp]
-lemma zero_ne_four_ {n : ℕ} (h : 4 < n): (0 : ZMod n) = 4 -> False := by
-  simp only [imp_false]
-  contrapose! h
-  apply Nat.le_of_dvd zero_lt_four
-  symm at h
-  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 4 n).mp h
-
-@[simp]
-lemma zero_ne_five_ {n : ℕ} (h : 5 < n): (0 : ZMod n) = 5 -> False := by
-  simp only [imp_false]
-  contrapose! h
-  have zero_lt_five : 0<5 := by simp_all only [Nat.zero_lt_succ]
-  apply Nat.le_of_dvd zero_lt_five
-  symm at h
-  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 5 n).mp h
-
-@[simp]
-lemma zero_ne_six_ {n : ℕ} (h : 6 < n): (0 : ZMod n) = 6 -> False := by
-  simp only [imp_false]
-  contrapose! h
-  have zero_lt_six : 0<6 := by simp_all only [Nat.zero_lt_succ]
-  apply Nat.le_of_dvd zero_lt_six
-  symm at h
-  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 6 n).mp h
-
-@[simp]
 lemma zero_ne_a_ {n : ℕ} (a: ZMod n)(h : a.val < n ∧ 0<a.val): 0 = a -> False := by
   simp only [imp_false]
   contrapose! h
   intro _
   aesop_subst h
   simp_all only [ZMod.val_zero, le_refl]
+
+
+-- proof provided by damiano
+lemma uminusvandlessthan7 {u v : ℕ}(h: u<7∧ v<7 ∧ u-v=1): (u: ZMod 12)-v=1 ∧ (v : ZMod 12).val<7 ∧ (u : ZMod 12).val <7 := by
+  rcases h with ⟨h1, h2, h3⟩
+  interval_cases u <;> interval_cases v <;> simp_all <;> norm_cast
+
+
+-- similar case bash to above
+lemma lessthan12greaterthanzero {n : ℕ} (h : n > 0 ∧ n < 12) : (n : ZMod 12).val < 12 ∧ 0 < (n : ZMod 12).val  := by
+  rcases h with ⟨h1, h2⟩
+  interval_cases n <;> simp_all <;> norm_cast
+
+@[simp]
+lemma zero_ne_one_mod12 : (0: ZMod 12) = 1 -> False := by apply zero_ne_a_ 1 (by exact lessthan12greaterthanzero (by trivial))
+@[simp]
+lemma zero_ne_two_mod12 : (0: ZMod 12) = 2 -> False := by apply zero_ne_a_ 2 (by exact lessthan12greaterthanzero (by trivial))
+@[simp]
+lemma zero_ne_three_mod12 : (0: ZMod 12) = 3 -> False := by apply zero_ne_a_ 3 (by exact lessthan12greaterthanzero (by trivial))
+@[simp]
+lemma zero_ne_four_mod12 : (0: ZMod 12) = 4 -> False := by apply zero_ne_a_ 4 (by exact lessthan12greaterthanzero (by trivial))
+@[simp]
+lemma zero_ne_five_mod12 : (0: ZMod 12) = 5 -> False := by apply zero_ne_a_ 5 (by exact lessthan12greaterthanzero (by trivial))
+@[simp]
+lemma zero_ne_six_mod12 : (0: ZMod 12) = 6 -> False := by apply zero_ne_a_ 6 (by exact lessthan12greaterthanzero (by trivial))
+
 
 -- graph with induced c7
 -- definition could have been more compact but it changes the proof so did not change
@@ -427,15 +413,7 @@ def funkyGraph  : SimpleGraph (ZMod 12) :=
   ∨ (x=2 ∧ y=9))
 
 
-lemma twelve_gt_one : Fact (1 < 12) := by
-  refine fact_iff.mpr ?_
-  refine Nat.succ_le_iff.mp ?_
-  norm_num
 
-
-lemma  zmod12nontrivial : Nontrivial (ZMod 12):= by
-  have h := twelve_gt_one
-  exact ZMod.nontrivial 12
 
 lemma  adjacenciesforc7infunckygraph (u v : ZMod 12) (h: v-u=1∧ u.val <7∧ v.val<7 ): funkyGraph.Adj u v := by
   unfold funkyGraph
@@ -447,57 +425,13 @@ lemma  adjacenciesforc7infunckygraph (u v : ZMod 12) (h: v-u=1∧ u.val <7∧ v.
 
 
 
--- lemma oneminuszeroandlessthan7 : (1: ZMod 12)-0=1 ∧ (0 : ZMod 12).val<7 ∧ (1 : ZMod 12).val <7 := by
---   unfold ZMod.val
---   simp_all only [sub_zero, Fin.val_zero, Nat.zero_lt_succ, Fin.val_one, Nat.one_lt_succ_succ, and_self]
-
--- lemma  twominusoneandlessthan7 : (2: ZMod 12)-1=1 ∧ (1 : ZMod 12).val<7 ∧ (2 : ZMod 12).val <7   := by
---   unfold ZMod.val
---   norm_num
-
--- lemma  threeminustwoandlessthan7 : (3: ZMod 12)-2=1 ∧ (2 : ZMod 12).val<7 ∧ (3 : ZMod 12).val <7 := by
---   unfold ZMod.val
---   norm_num
---   exact Nat.compare_eq_lt.mp rfl
-
--- lemma  fourminusthreeandlessthan7 : (4: ZMod 12)-3=1 ∧ (3 : ZMod 12).val<7 ∧ (4 : ZMod 12).val <7 := by
---   unfold ZMod.val
---   norm_num
---   constructor
---   <;>  exact Nat.compare_eq_lt.mp rfl
-
--- lemma  fiveminusfourandlessthan7 : (5: ZMod 12)-4=1 ∧ (4 : ZMod 12).val<7 ∧ (5 : ZMod 12).val <7 := by
---   unfold ZMod.val
---   norm_num
---   constructor
---   <;>  exact Nat.compare_eq_lt.mp rfl
-
--- lemma  sixminusfiveandlessthan7 : (6: ZMod 12)-5=1 ∧ (5 : ZMod 12).val<7 ∧ (6 : ZMod 12).val <7 := by
---   unfold ZMod.val
---   norm_num
---   constructor
---   <;>  exact Nat.compare_eq_lt.mp rfl
-
-lemma uminusvandlessthan7 {u v : ℕ}(h: u<7∧ v<7 ∧ u-v=1): (u: ZMod 12)-v=1 ∧ (v : ZMod 12).val<7 ∧ (u : ZMod 12).val <7 := by
-  unfold ZMod.val
-  norm_num
-  constructor
-
-  sorry
-
-
-lemma lessthan12greaterthanzero {n : ℕ} (h : n > 0 ∧ n < 12) : (n : ZMod 12).val < 12 ∧ 0 < (n : ZMod 12).val  := by
-    unfold ZMod.val
-    norm_num
-    aesop?
-    sorry
-
 
 lemma sixconnectedtozero : funkyGraph.Adj 6 0 := by
   unfold funkyGraph
   simp_all only [fromRel_adj, ne_eq, and_self, true_and, true_or, or_true, and_true]
   rw [← @ne_eq]
   symm
+
   apply (zero_ne_a_  6 (by exact lessthan12greaterthanzero (by trivial)))
 
 
@@ -518,21 +452,35 @@ def funkyGraphc7Walk : funkyGraph.Walk 0 0  :=
 
 lemma funkyGraphWalkisTrail : funkyGraphc7Walk.IsTrail := by
   have h' := zmod12nontrivial
-  have onelessthan12: 1<12 := by trivial
-  have twolessthan12: 2<12 := by exact Nat.compare_eq_lt.mp rfl
-  have threelessthan12: 3<12 := by exact Nat.compare_eq_lt.mp rfl
-  have fourlessthan12: 4<12 := by exact Nat.compare_eq_lt.mp rfl
-  have fivelessthan12: 5<12 := by exact Nat.compare_eq_lt.mp rfl
-  have sixlessthan12: 6<12 := by exact Nat.compare_eq_lt.mp rfl
 
   unfold funkyGraphc7Walk
+  simp only [Walk.cons_append, Walk.nil_append, Walk.cons_isTrail_iff, Walk.IsTrail.nil,
+    Walk.edges_nil, List.not_mem_nil, not_false_eq_true, and_self, Walk.edges_cons,
+    List.mem_singleton, Sym2.eq, Sym2.rel_iff', Prod.mk.injEq, Prod.swap_prod_mk, and_true,
+    true_and, List.mem_cons, one_ne_zero, false_and, or_false, zero_ne_one, false_or, and_false,zero_ne_six_mod12,zero_ne_five_mod12,
+    zero_ne_four_mod12,zero_ne_three_mod12,zero_ne_two_mod12,zero_ne_one_mod12]
+
   aesop
-  -- all_goals apply zero_ne_two_ (by trivial) left
-  -- all_goals apply zero_ne_three_ (by trivial) h
 
 
 
--- lemma funkyGraphWalkisnotNill
+lemma funkyGraphWalktailnodup  : funkyGraphc7Walk.support.tail.Nodup := by
+  unfold funkyGraphc7Walk
+  simp only [Walk.cons_append, Walk.nil_append, Walk.support_cons, Walk.support_nil, List.tail_cons,
+    List.nodup_cons, List.mem_cons, List.mem_singleton, List.not_mem_nil, not_false_eq_true,
+    List.nodup_nil, and_self, and_true]
+  aesop?
+  · rw [<- add_right_cancel_iff (a := -1)] at h
+  · rw [<- add_right_cancel_iff (a := -1)] at h
+  ·
+
+
+
+
+
+lemma funkyGraphWalkisnotNil : funkyGraphc7Walk ≠ SimpleGraph.Walk.nil := by
+  unfold funkyGraphc7Walk
+  simp_all only [SimpleGraph.Walk.cons_append, SimpleGraph.Walk.nil_append, ne_eq, not_false_eq_true]
 
 -- lemma funkyGraphWalktailnodup
 
@@ -541,26 +489,38 @@ lemma  funkyGraphWalkIsCycle : funkyGraphc7Walk.IsCycle := by
   constructor
   apply funkyGraphWalkisTrail
   constructor
-  apply funkyGraphWalkisnotNill
+  apply funkyGraphWalkisnotNil
   apply funkyGraphWalktailnodup
 
-  sorry
+
   done
 
 
-
-def TestGCycle5walkLength5 : TestGCycle5walk.length=5 := by
-  sorry
-  -- exact SimpleGraph.Walk.nil
-  done
+lemma funkyGraphWalkLength7 : funkyGraphc7Walk.length=7 := by
+  apply Eq.refl (SimpleGraph.Walk.length funkyGraphc7Walk)
 
 
-theorem TestGhasc5 : hasNCycle  oddHoleTestG 5 := by
+
+
+theorem funkyGraphhasc7 : hasNCycle funkyGraph 7  := by
   unfold hasNCycle
   use 0
-  use TestGCycle5walk
+  use funkyGraphc7Walk
   constructor
-  {  apply TestGCycle5walkisCycle
+  {  apply funkyGraphWalkIsCycle
   }
-  { apply TestGCycle5walkLength5
+  { apply funkyGraphWalkLength7
   }
+
+theorem funkyGraphhasOddhole : hasOddHole funkyGraph := by
+  unfold hasOddHole
+  use 1
+  exact funkyGraphhasc7
+
+
+theorem funkyGraphnotPerfect : ¬ isPerfect funkyGraph := by
+  rw [strongPerfectGraphTheorem]
+  simp only [not_and_or]
+  rw [not_not]
+  refine Or.inl ?h
+  exact funkyGraphhasOddhole
