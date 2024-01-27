@@ -822,6 +822,166 @@ theorem cycle5notPerfect : ¬ isPerfect (cycle 5) := by
   exact cycle5hasOddHole
 
 
+lemma twelve_gt_one : Fact (1 < 12) := by
+  refine fact_iff.mpr ?_
+  refine Nat.succ_le_iff.mp ?_
+  norm_num
+
+
+lemma  zmod12nontrivial : Nontrivial (ZMod 12):= by
+  have h := twelve_gt_one
+  exact ZMod.nontrivial 12
+
+@[simp]
+lemma zero_ne_a_ {n : ℕ} (a: ZMod n)(h : a.val < n ∧ 0<a.val): 0 = a -> False := by
+  simp only [imp_false]
+  contrapose! h
+  intro _
+  aesop_subst h
+  simp_all only [ZMod.val_zero, le_refl]
+
+
+-- proof provided by damiano
+@[simp]
+lemma uminusvandlessthan7 {u v : ℕ}(h: u<7∧ v<7 ∧ u-v=1): (u: ZMod 12)-v=1 ∧ (v : ZMod 12).val<7 ∧ (u : ZMod 12).val <7 := by
+  rcases h with ⟨h1, h2, h3⟩
+  interval_cases u <;> interval_cases v <;> simp_all <;> norm_cast
+
+
+-- similar case bash to above
+@[simp]
+lemma lessthan12greaterthanzero {n : ℕ} (h : n > 0 ∧ n < 12) : (n : ZMod 12).val < 12 ∧ 0 < (n : ZMod 12).val  := by
+  rcases h with ⟨h1, h2⟩
+  interval_cases n <;> simp_all <;> norm_cast
+
+-- @[simp]
+-- lemma zero_ne_one_mod12 : (0: ZMod 12) = 1 -> False := by apply zero_ne_a_ 1 (by exact lessthan12greaterthanzero (by trivial))
+-- @[simp]
+-- lemma zero_ne_two_mod12 : (0: ZMod 12) = 2 -> False := by apply zero_ne_a_ 2 (by exact lessthan12greaterthanzero (by trivial))
+-- @[simp]
+-- lemma zero_ne_three_mod12 : (0: ZMod 12) = 3 -> False := by apply zero_ne_a_ 3 (by exact lessthan12greaterthanzero (by trivial))
+-- @[simp]
+-- lemma zero_ne_four_mod12 : (0: ZMod 12) = 4 -> False := by apply zero_ne_a_ 4 (by exact lessthan12greaterthanzero (by trivial))
+-- @[simp]
+-- lemma zero_ne_five_mod12 : (0: ZMod 12) = 5 -> False := by apply zero_ne_a_ 5 (by exact lessthan12greaterthanzero (by trivial))
+-- @[simp]
+-- lemma zero_ne_six_mod12 : (0: ZMod 12) = 6 -> False := by apply zero_ne_a_ 6 (by exact lessthan12greaterthanzero (by trivial))
+
+
+-- graph with induced c7
+-- definition could have been more compact but it changes the proof so did not change
+def funkyGraph  : SimpleGraph (ZMod 12) :=
+  SimpleGraph.fromRel (λ x y =>
+   ((x.val<7 ∧ y.val<7) ∧ x-y=1) ∨
+  (x=0 ∧ y = 6) -- edge to finish of cycle
+  ∨ (x=0 ∧ y=9)
+  ∨ (x=2 ∧ y=11)
+  ∨ (x=4 ∧ y=9)
+  ∨ (x=10 ∧ y=9)
+  ∨ (x=2 ∧ y=9))
+
+
+
+
+lemma  adjacenciesforc7infunckygraph (u v : ZMod 12) (h: v-u=1∧ u.val <7∧ v.val<7 ): funkyGraph.Adj u v := by
+  unfold funkyGraph
+  have h' := zmod12nontrivial
+  simp_all only [fromRel_adj, ne_eq, and_self, true_and, true_or, or_true, and_true]
+  intro a
+  simp_all only [sub_self, zero_ne_one]
+
+
+
+
+
+lemma sixconnectedtozero : funkyGraph.Adj 6 0 := by
+  unfold funkyGraph
+  simp_all only [fromRel_adj, ne_eq, and_self, true_and, true_or, or_true, and_true]
+  rw [← @ne_eq]
+  symm
+  apply (zero_ne_a_  6 (by exact lessthan12greaterthanzero (by trivial)))
+
+
+
+def funkyGraphc7Walk : funkyGraph.Walk 0 0  :=
+  (adjacenciesforc7infunckygraph 0 1 (uminusvandlessthan7 (by trivial))).toWalk.append
+  ((adjacenciesforc7infunckygraph 1 2 (uminusvandlessthan7 (by trivial))).toWalk.append
+  ((adjacenciesforc7infunckygraph 2 3 (uminusvandlessthan7 (by trivial))).toWalk.append
+  ((adjacenciesforc7infunckygraph 3 4 (uminusvandlessthan7 (by trivial))).toWalk.append
+  ((adjacenciesforc7infunckygraph 4 5 (uminusvandlessthan7 (by trivial))).toWalk.append
+  ((adjacenciesforc7infunckygraph 5 6 (uminusvandlessthan7 (by trivial))).toWalk.append
+  (sixconnectedtozero.toWalk))))))
+
+
+lemma funkyGraphWalkisTrail : funkyGraphc7Walk.IsTrail := by
+  have h' := zmod12nontrivial
+
+  unfold funkyGraphc7Walk
+  simp only [Walk.cons_append, Walk.nil_append, Walk.cons_isTrail_iff, Walk.IsTrail.nil,
+    Walk.edges_nil, List.not_mem_nil, not_false_eq_true, and_self, Walk.edges_cons,
+    List.mem_singleton, Sym2.eq, Sym2.rel_iff', Prod.mk.injEq, Prod.swap_prod_mk, and_true,
+    true_and, List.mem_cons, one_ne_zero, false_and, or_false, zero_ne_one, false_or, and_false,zero_ne_six_mod12,zero_ne_five_mod12,
+    zero_ne_four_mod12,zero_ne_three_mod12,zero_ne_two_mod12,zero_ne_one_mod12]
+  norm_cast
+
+
+
+lemma funkyGraphWalktailnodup  : funkyGraphc7Walk.support.tail.Nodup := by
+  unfold funkyGraphc7Walk
+  simp only [Walk.cons_append, Walk.nil_append, Walk.support_cons, Walk.support_nil, List.tail_cons,
+    List.nodup_cons, List.mem_cons, List.mem_singleton, List.not_mem_nil, not_false_eq_true,
+    List.nodup_nil, and_self, and_true]
+  norm_cast
+
+
+
+lemma funkyGraphWalkisnotNil : funkyGraphc7Walk ≠ SimpleGraph.Walk.nil := by
+  unfold funkyGraphc7Walk
+  simp_all only [SimpleGraph.Walk.cons_append, SimpleGraph.Walk.nil_append, ne_eq, not_false_eq_true]
+
+-- lemma funkyGraphWalktailnodup
+
+lemma  funkyGraphWalkIsCycle : funkyGraphc7Walk.IsCycle := by
+  rw [isCycle_def]
+  constructor
+  apply funkyGraphWalkisTrail
+  constructor
+  apply funkyGraphWalkisnotNil
+  apply funkyGraphWalktailnodup
+
+  done
+
+
+lemma funkyGraphWalkLength7 : funkyGraphc7Walk.length=7 := by
+  apply Eq.refl (SimpleGraph.Walk.length funkyGraphc7Walk)
+
+
+
+
+theorem funkyGraphhasc7 : hasNCycle funkyGraph 7  := by
+  unfold hasNCycle
+  use 0
+  use funkyGraphc7Walk
+  constructor
+  {  apply funkyGraphWalkIsCycle
+  }
+  { apply funkyGraphWalkLength7
+  }
+
+theorem funkyGraphhasOddhole : hasOddHole funkyGraph := by
+  unfold hasOddHole
+  use 1
+  exact funkyGraphhasc7
+
+
+theorem funkyGraphnotPerfect : ¬ isPerfect funkyGraph := by
+  rw [strongPerfectGraphTheorem]
+  simp only [not_and_or]
+  rw [not_not]
+  refine Or.inl ?h
+  exact funkyGraphhasOddhole
+
+
 
 
 end PerfectGraphs
