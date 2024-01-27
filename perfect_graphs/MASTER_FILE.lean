@@ -847,8 +847,7 @@ theorem cycle5WalkisTrail : cycle5Walk.IsTrail := by
 
 
 -- This is defined in simplegraph.walk.connectivity file but we ran into issues so have copied across the isCycle definition
-universe u  symm at h
-  exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 4 n).mp h
+universe u
 variable {V : Type u}
 variable (G : SimpleGraph V)
 theorem isCycle_def {u : V} (p : G.Walk u u) :
