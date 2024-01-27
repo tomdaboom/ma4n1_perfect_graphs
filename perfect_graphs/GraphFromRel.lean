@@ -11,6 +11,7 @@ import Mathlib.Combinatorics.SimpleGraph.Connectivity
 namespace rels
 open SimpleGraph
 open Subgraph
+
 def cycle (n : ℕ) : (SimpleGraph (ZMod n)) :=
   SimpleGraph.fromRel (λ x y => x-y = 1)
 #check cycleG 5
@@ -151,11 +152,11 @@ lemma uplusoneminusu (u : ZMod 5): u+1-u=1 := by
 
 
 def  cycle5Walk : SimpleGraph.Walk (cycle 5) 0 0  :=
-  (adjacencies 0 1  oneminuszero).toWalk.append
-  ((adjacencies 1 2 twominusone).toWalk.append
-  ((adjacencies 2 3 threeminustwo).toWalk.append
-  ((adjacencies 3 4 fourminusthree).toWalk.append
-  (adjacencies  4 0 zerominusfour).toWalk)))
+  (adjacencies 0 1  (by trivial)).toWalk.append
+  ((adjacencies 1 2 (by trivial)).toWalk.append
+  ((adjacencies 2 3 (by trivial)).toWalk.append
+  ((adjacencies 3 4 (by trivial)).toWalk.append
+  (adjacencies  4 0 (by trivial)).toWalk)))
 
 
 
@@ -517,4 +518,72 @@ theorem funkyGraphnotPerfect : ¬ isPerfect funkyGraph := by
 
 
 
+@[simp]
+lemma Zmod2nplus5nonTrivial (n: ℕ ) : Nontrivial (ZMod (2*n+5)) := by
+  have twonplus5_gt_one : Fact (1 < 2*n+5) := by
+    refine fact_iff.mpr ?_
+    refine Nat.succ_le_iff.mp ?_
+    linarith
+  exact ZMod.nontrivial (2 * n + 5)
 
+
+
+
+
+lemma  adjacenciesforcN {n : ℕ }(u v : ZMod (2*n+5)) (h: v-u=1): (cycle (2*n+5)).Adj u v := by
+  unfold cycle
+  have h' := Zmod2nplus5nonTrivial n
+  simp_all only [fromRel_adj, ne_eq, and_self, true_and, true_or, or_true, and_true]
+  intro a
+  simp_all only [sub_self, zero_ne_one]
+
+
+
+
+def cycleNcNWalk {n: ℕ }: (cycle (2*n+5)).Walk 0 0 :=
+  let Walk := (adjacenciesforcN 0 1 (by norm_cast)).toWalk
+  for i in [1:n]
+
+
+  done
+
+
+
+lemma cycleNWalkIsCycle cycleNcNWalk.IsCycle := by
+  rw [isCycle_def]
+  constructor
+  apply cycleNWalkisTrail
+  constructor
+  apply cycleNWalkisnotNil
+  apply cycleNWalktailnodup
+
+  done
+
+
+
+lemma cycleNWalkisNLength : cycleNcNWalk.length = (2*n+5) := by
+  sorry
+
+lemma cycleNhascN {n: ℕ }: hasNCycle (cycle (2*n+5)) (2*n+5)  := by
+  unfold hasNCycle
+  use 0
+  use cycleNcNWalk
+  constructor
+  {  apply cycleNWalkIsCycle
+  }
+  { apply cycleNWalkisNLength
+  }
+
+
+
+theorem cycleNhasOddhole : hasOddHole funkyGraph := by
+  unfold hasOddHole
+  use 1
+  exact cycleNhascN
+
+theorem cycleNnotPerfect {n: ℕ }: ¬ isPerfect (cycle (2*n+5)) := by
+  rw [strongPerfectGraphTheorem]
+  simp only [not_and_or]
+  rw [not_not]
+  refine Or.inl ?h
+  sorry
