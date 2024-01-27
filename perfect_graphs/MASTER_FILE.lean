@@ -43,19 +43,96 @@ def hasNClique {V : Type} (G : SimpleGraph V) (n : ℕ) : Prop :=
 noncomputable def CliqueNumber {V : Type} (G : SimpleGraph V) : ℕ :=
   sSup { n : ℕ | hasNClique G n }
 
---TBD: Dan proof (potentially)
-theorem equivCliqueNumber {V : Type} (G : SimpleGraph V) (k : ℕ) (NClique : hasNClique G k) (notNPlusOneClique : ¬ hasNClique G (k+1)) : CliqueNumber G = k := by
+--Lemmas towards computable definition of clique number
+lemma cliqueNumberInductionLemma
+  {V : Type} (G : SimpleGraph V) [DecidableEq V]
+  (n: ℕ)
+  : hasNClique G n → hasNClique G (n-1) := by
+  by_cases n_boundy_boi : n ≥ 1
+  · unfold hasNClique
+    intros h
+    aesop
+    rw [@isNClique_iff] at h_1
+    cases h_1 with
+    | intro clique card =>
+
+    have w_nonempty : Nonempty w := by
+      simp only [nonempty_subtype]
+      rw [@Nat.le_antisymm_iff] at card
+      cases card with
+      | intro lower upper =>
+      have one_le_w := le_trans' upper n_boundy_boi
+      exact Multiset.card_pos_iff_exists_mem.mp one_le_w
+
+    simp only [nonempty_subtype] at w_nonempty
+
+    have elem_of_w := w_nonempty.choose_spec
+    have subset_of_w := w \ { Exists.choose w_nonempty }
+
+    use w \ { Exists.choose w_nonempty }
+
+
+    apply IsNClique.mk
+    unfold IsClique
+    unfold Set.Pairwise
+    aesop_graph
+    rw [← card]
+
+    apply Finset.card_sdiff
+    exact Finset.singleton_subset_iff.mpr elem_of_w
+
+  · rw [@Nat.not_le, @Nat.lt_one_iff] at n_boundy_boi
+    rw [n_boundy_boi]
+    norm_num
+
+
+lemma cNcontra {V : Type} (G : SimpleGraph V) [DecidableEq V]
+  (n: ℕ): ¬ hasNClique G (n)  -> ¬ hasNClique G (n + 1):= by
+  intros h
+  contrapose! h
+  refine id ?a
+  have k := cliqueNumberInductionLemma G (n+1) h
+  norm_num at k
+  exact k
+
+lemma cNcontraInduct {V : Type} (G : SimpleGraph V) [DecidableEq V]
+  (n a : ℕ) : ¬ hasNClique G (n)  -> ¬ hasNClique G (n + a) := by
+  induction a with
+  | zero      => simp only [Nat.zero_eq, add_zero, imp_self]
+  | succ a ih =>
+    intros noNclique
+    have nonaclique := ih noNclique
+    rw [Nat.succ_eq_add_one, <- add_assoc]
+    exact cNcontra G (n+a) nonaclique
+
+--Computable definiton of clique number
+theorem equivCliqueNumber
+  {V : Type} (G : SimpleGraph V) [DecidableEq V] (k : ℕ)
+  (NClique : hasNClique G k)
+  (notNPlusOneClique : ¬ hasNClique G (k+1)) : CliqueNumber G = k
+  := by
   unfold CliqueNumber
   refine IsGreatest.csSup_eq ?H
-  unfold hasNClique
-  unfold hasNClique at NClique
-  unfold hasNClique at notNPlusOneClique
   unfold IsGreatest
-  refine (and_iff_right NClique).mpr ?H.a
-  unfold upperBounds
-  --simp only [Set.mem_setOf_eq, forall_exists_index]
   aesop
-  sorry
+  unfold upperBounds
+  simp only [Set.mem_setOf_eq]
+  intros a
+
+  have z := λ b : ℕ => cNcontraInduct G (k+1) b notNPlusOneClique
+
+  intro hasAclique
+
+  rw [← @Nat.lt_add_one_iff]
+
+  contrapose! hasAclique
+
+  have isAp : ∃ p, k + 1 + p = a := by exact Nat.le.dest hasAclique
+  have b_rw := isAp.choose_spec
+  have j := z (isAp.choose)
+  rw [← b_rw]
+  exact j
+
 
 --------------------------------------------------------------------------
 --SECTION: PERFECT DEFINITIONS
