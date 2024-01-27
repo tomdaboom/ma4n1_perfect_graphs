@@ -515,3 +515,6 @@ theorem funkyGraphnotPerfect : ¬ isPerfect funkyGraph := by
   refine Or.inl ?h
   exact funkyGraphhasOddhole
 
+
+
+

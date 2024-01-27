@@ -1059,6 +1059,4 @@ theorem funkyGraphnotPerfect : ¬ isPerfect funkyGraph := by
   exact funkyGraphhasOddhole
 
 
-
-
 end PerfectGraphs
