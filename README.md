@@ -4,6 +4,8 @@ The `perfect_graphs` directory has 3 elements:
 - `graph_redefinition.lean`, which contains a more convenient redefinition of graphs for most combinatorial applications, and
 - `OLD`, which is another directory containing other `.lean` files we used while we were working on the project. We strongly advise that you don't look in there - the vast majority of content there has been copied to the master file where needed, and the rest is unused.
 
+Also, we have been using LEAN live (LEAN's online editor) and so have not been updating Mathlib - there may be several problems if you try and run this without updating Mathlib by yourself.
+
 # ma4n1_perfect_graphs
 
 Things we already have :
