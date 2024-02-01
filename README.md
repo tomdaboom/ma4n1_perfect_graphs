@@ -1,7 +1,7 @@
-# File structure (Damiano should read this)
+# For Damiano
 The `perfect_graphs` directory has 3 elements:
-- `MASTER_FILE.lean`, which contains all the main definitions, lemmas and theorems
-- `graph_redefinition.lean`, which contains a more convenient redefinition of graphs for most combinatorial applications
+- `MASTER_FILE.lean`, which contains all the main definitions, lemmas and theorems,
+- `graph_redefinition.lean`, which contains a more convenient redefinition of graphs for most combinatorial applications, and
 - `OLD`, which is another directory containing other `.lean` files we used while we were working on the project. We strongly advise that you don't look in there. 
 
 # ma4n1_perfect_graphs
