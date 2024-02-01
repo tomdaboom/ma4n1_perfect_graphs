@@ -1,4 +1,4 @@
-# File structure
+# File structure (Damiano should read this)
 The `perfect_graphs` directory has 3 elements:
 - `MASTER_FILE.lean`, which contains all the main definitions, lemmas and theorems
 - `graph_redefinition.lean`, which contains a more convenient redefinition of graphs for most combinatorial applications
