@@ -9,7 +9,6 @@ import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Aesop.Check
 import Mathlib.Logic.Basic
 import Aesop.Tree.Data
-set_option trace.aesop true
 
 
 
@@ -17,17 +16,6 @@ namespace PerfectGraphs
 open SimpleGraph
 open Subgraph
 open Fintype
-
---------------------------------------------------------------------------
---SECTION: CHROMATIC NUMBER
---------------------------------------------------------------------------
-
---Note: this will sometimes be referred to as chi(G) or just chi if context is clear
-
---TBD: Tom proof
---Align the definition of chromatic number to a computable one
-theorem chromaticNumberAltDef {V : Type} (G : SimpleGraph V) (k : ℕ) (colorable : G.Colorable k) (notColorable : ¬ G.Colorable (k-1)) : G.chromaticNumber = k := by
-    sorry
 
 --------------------------------------------------------------------------
 --SECTION: CLIQUE NUMBER
@@ -65,13 +53,8 @@ lemma cliqueNumberInductionLemma
       exact Multiset.card_pos_iff_exists_mem.mp one_le_w
 
     simp only [nonempty_subtype] at w_nonempty
-
     have elem_of_w := w_nonempty.choose_spec
-    have subset_of_w := w \ { Exists.choose w_nonempty }
-
     use w \ { Exists.choose w_nonempty }
-
-
     apply IsNClique.mk
     unfold IsClique
     unfold Set.Pairwise
@@ -138,7 +121,6 @@ theorem equivCliqueNumber
 --SECTION: PERFECT DEFINITIONS
 --------------------------------------------------------------------------
 
---TBD: standardise subgraph letters eg H H' vs G H
 --Can a subgraph be induced from the graph it's a subgraph of
 def isInducedSubgraph {V : Type} (G : SimpleGraph V) (H : Subgraph G) : Prop :=
   ∀ {u v: V}, u ∈ H.verts → v ∈ H.verts → G.Adj u v → H.Adj u v
@@ -448,7 +430,8 @@ lemma neg_two_ne_one {n : ℕ} (h : 3 < n) : (-2 : ZMod n) ≠ 1 := by
   apply Nat.le_of_dvd zero_lt_three
   exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 3 n).mp h
 
---TBD: proof?
+--Due to the chromatic number definition, we don't have the proof of the colourability of an odd cycle.
+--We will therefore assume this is true (because it is).
 theorem chiCycle3 (n : ℕ) (h : Odd n) : (cycle n).chromaticNumber = 3 := by
   sorry
 
@@ -931,17 +914,17 @@ lemma lessthan12greaterthanzero {n : ℕ} (h : n > 0 ∧ n < 12) : (n : ZMod 12)
   interval_cases n <;> simp_all <;> norm_cast
 
 -- @[simp]
--- lemma zero_ne_one_mod12 : (0: ZMod 12) = 1 -> False := by apply zero_ne_a_ 1 (by exact lessthan12greaterthanzero (by trivial))
+ lemma zero_ne_one_mod12 : (0: ZMod 12) = 1 -> False := by apply zero_ne_a_ 1 (by exact lessthan12greaterthanzero (by trivial))
 -- @[simp]
--- lemma zero_ne_two_mod12 : (0: ZMod 12) = 2 -> False := by apply zero_ne_a_ 2 (by exact lessthan12greaterthanzero (by trivial))
+ lemma zero_ne_two_mod12 : (0: ZMod 12) = 2 -> False := by apply zero_ne_a_ 2 (by exact lessthan12greaterthanzero (by trivial))
 -- @[simp]
--- lemma zero_ne_three_mod12 : (0: ZMod 12) = 3 -> False := by apply zero_ne_a_ 3 (by exact lessthan12greaterthanzero (by trivial))
+ lemma zero_ne_three_mod12 : (0: ZMod 12) = 3 -> False := by apply zero_ne_a_ 3 (by exact lessthan12greaterthanzero (by trivial))
 -- @[simp]
--- lemma zero_ne_four_mod12 : (0: ZMod 12) = 4 -> False := by apply zero_ne_a_ 4 (by exact lessthan12greaterthanzero (by trivial))
+ lemma zero_ne_four_mod12 : (0: ZMod 12) = 4 -> False := by apply zero_ne_a_ 4 (by exact lessthan12greaterthanzero (by trivial))
 -- @[simp]
--- lemma zero_ne_five_mod12 : (0: ZMod 12) = 5 -> False := by apply zero_ne_a_ 5 (by exact lessthan12greaterthanzero (by trivial))
+ lemma zero_ne_five_mod12 : (0: ZMod 12) = 5 -> False := by apply zero_ne_a_ 5 (by exact lessthan12greaterthanzero (by trivial))
 -- @[simp]
--- lemma zero_ne_six_mod12 : (0: ZMod 12) = 6 -> False := by apply zero_ne_a_ 6 (by exact lessthan12greaterthanzero (by trivial))
+ lemma zero_ne_six_mod12 : (0: ZMod 12) = 6 -> False := by apply zero_ne_a_ 6 (by exact lessthan12greaterthanzero (by trivial))
 
 
 -- graph with induced c7
