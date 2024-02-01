@@ -206,7 +206,6 @@ theorem equivIsEmpty {V : Type}
   aesop
 
 --The clique number of an empty graph is 1
---TBD: fix
 theorem EmptyCliqueOne {V : Type}[h : Nonempty V] [DecidableEq V]  : CliqueNumber (emptyGraph V) = 1 := by
   apply equivCliqueNumber
   unfold hasNClique
@@ -315,7 +314,6 @@ lemma equivIsComplete {V : Type}
   unfold isComplete at h
   aesop
 
---TBD: fix?
 --Proves the clique number of a complete graph on n vertices is n
 theorem CompleteCliqueN {V : Type} [h' : Fintype V] [h : Nonempty V] [deq : DecidableEq V] : CliqueNumber (completeGraph V) = (Finset.univ (α := V)).card := by
   apply equivCliqueNumber
@@ -379,8 +377,7 @@ theorem CompleteIsPerfect {V : Type}  [finV : Fintype V]  [nemp : Nonempty V] [d
 def cycle (n : ℕ) : (SimpleGraph (ZMod n)) :=
   SimpleGraph.fromRel (λ x y => x-y = 1)
 
---The following lemmas are used in the proof of
---a cycle's clique number being 2 and/or its chromatic number being 3
+--The following lemmas are used in the proof of a cycle's clique number being 2 
 
 --Rewrites two elements of Z mod n with a difference of 1
 lemma minuseqrewrite {n : ℕ} {u v: ZMod n} : (u - v = 1) → (u = 1 + v) := by
@@ -592,7 +589,6 @@ theorem CliqueNumberCycleIsTwo (n : ℕ) (h : n ≥ 4) : CliqueNumber (cycle n) 
                                         revert h3''
                                         exact fun h3'' => f11 h3''
 
---TBD: this proof
 --Prove any odd cycle is imperfect using chi = 3 and omega = 2 from earlier proofs
 theorem oddCycleNotPerfect (n : ℕ) (h : Odd n) (h2 : n ≥ 4) : ¬isPerfect (cycle n) := by
   unfold isPerfect
@@ -618,6 +614,7 @@ def hasOddHole {V : Type} (G : SimpleGraph V) : Prop :=
   ∃ n : ℕ, hasNCycle G (2*n+5) --odd cycle of length ≥ 5, using that 0 ∈ ℕ in Lean
 
 --Statement of Strong Perfect Graph Theorem
+--Proving this is beyond the scope of this project
 theorem strongPerfectGraphTheorem {V : Type} (G : SimpleGraph V)
  : isPerfect G ↔ ¬ hasOddHole G ∧ ¬ hasOddHole Gᶜ := by
   sorry
@@ -648,10 +645,10 @@ theorem weakPerfectGraphTheorem {V : Type} (G : SimpleGraph V) : isPerfect G ↔
   })
 
 --------------------------------------------------------------------------
---SECTION: EXAMPLE APPLICATION OF SPGT
+--SECTION: EXAMPLE APPLICATION OF SPGT 1 - 5 CYCLE
 --------------------------------------------------------------------------
 
-/- We now prove that the cycle on 5 vertices is perfect
+/-We now prove that the cycle on 5 vertices is perfect
 using the statement of the Strong Perfect Graph Theorem above -/
 
 /-Use the fact that 5 > 1 to show Z mod 5 is non-trivial
@@ -732,11 +729,11 @@ lemma zero_ne_four : (0 : ZMod 5) = 4 -> False := by
   symm at h
   exact (ZMod.nat_cast_zmod_eq_zero_iff_dvd 4 5).mp h
 
-/- Support = the list of vertices the walk visits in order
+/-Support = the list of vertices the walk visits in order
 Tail of the support = the final vertex the walk visits
-This theorem checks that vertices are not visited more than once in the walk (except maybe the start and end vertex of the cycle)
+This lemma checks that vertices are not visited more than once in the walk (except maybe the start and end vertex of the cycle)
 To do so it must check that there are no equivalences in the vertices mod 5 -/
-theorem cycle5Walktailnodup : cycle5Walk.support.tail.Nodup := by
+lemma cycle5Walktailnodup : cycle5Walk.support.tail.Nodup := by
   unfold cycle5Walk
   have h' := zmod5nontrivial
   simp only [SimpleGraph.Walk.cons_append, SimpleGraph.Walk.nil_append,
@@ -829,7 +826,7 @@ theorem cycle5WalkisTrail : cycle5Walk.IsTrail := by
 
 
 
--- This is defined in simplegraph.walk.connectivity file but we ran into issues so have copied across the isCycle definition
+--This is defined in simplegraph.walk.connectivity file but we ran into issues so have copied across the isCycle definition
 universe u
 variable {V : Type u}
 variable (G : SimpleGraph V)
@@ -880,17 +877,23 @@ theorem cycle5notPerfect : ¬ isPerfect (cycle 5) := by
   refine Or.inl ?h
   exact cycle5hasOddHole
 
+--------------------------------------------------------------------------
+--SECTION: EXAMPLE APPLICATION OF SPGT 2 - "FUNKY GRAPH"
+--------------------------------------------------------------------------
 
+/-Use the fact that 12 > 1 to show Z mod 12 is non-trivial
+As we're working on 12 vertices, Z mod 12 will be the data type of our vertices for this section-/
 lemma twelve_gt_one : Fact (1 < 12) := by
   refine fact_iff.mpr ?_
   refine Nat.succ_le_iff.mp ?_
   norm_num
 
-
 lemma  zmod12nontrivial : Nontrivial (ZMod 12):= by
   have h := twelve_gt_one
   exact ZMod.nontrivial 12
 
+--An element a of Z mod n such that 0 < a < n is not 0
+--This is mostly used to show vertices are distinct
 @[simp]
 lemma zero_ne_a_ {n : ℕ} (a: ZMod n)(h : a.val < n ∧ 0<a.val): 0 = a -> False := by
   simp only [imp_false]
@@ -899,20 +902,24 @@ lemma zero_ne_a_ {n : ℕ} (a: ZMod n)(h : a.val < n ∧ 0<a.val): 0 = a -> Fals
   aesop_subst h
   simp_all only [ZMod.val_zero, le_refl]
 
-
--- proof provided by damiano
+--If both v and u = v+1 are less than 7, then these facts remain true for u and v mod 12
+--Used for vertex adjacencies
+--Proof provided by Damiano
 @[simp]
-lemma uminusvandlessthan7 {u v : ℕ}(h: u<7∧ v<7 ∧ u-v=1): (u: ZMod 12)-v=1 ∧ (v : ZMod 12).val<7 ∧ (u : ZMod 12).val <7 := by
+lemma uminusvandlessthan7 {u v : ℕ}(h: u<7 ∧ v<7 ∧ u-v=1): (u: ZMod 12)-v=1 ∧ (v : ZMod 12).val<7 ∧ (u : ZMod 12).val <7 := by
   rcases h with ⟨h1, h2, h3⟩
   interval_cases u <;> interval_cases v <;> simp_all <;> norm_cast
 
-
--- similar case bash to above
+--If 0 < n < 12 then 0 < n mod 12 < 12
+--Used to show non-equivalence of vertices to 0
+--Similar case bash to above
 @[simp]
 lemma lessthan12greaterthanzero {n : ℕ} (h : n > 0 ∧ n < 12) : (n : ZMod 12).val < 12 ∧ 0 < (n : ZMod 12).val  := by
   rcases h with ⟨h1, h2⟩
   interval_cases n <;> simp_all <;> norm_cast
 
+--Several lemmas with non-equivalences for 0
+--Used to show the walk in the graph is a trail
 -- @[simp]
  lemma zero_ne_one_mod12 : (0: ZMod 12) = 1 -> False := by apply zero_ne_a_ 1 (by exact lessthan12greaterthanzero (by trivial))
 -- @[simp]
@@ -927,12 +934,11 @@ lemma lessthan12greaterthanzero {n : ℕ} (h : n > 0 ∧ n < 12) : (n : ZMod 12)
  lemma zero_ne_six_mod12 : (0: ZMod 12) = 6 -> False := by apply zero_ne_a_ 6 (by exact lessthan12greaterthanzero (by trivial))
 
 
--- graph with induced c7
--- definition could have been more compact but it changes the proof so did not change
+/- Here we introduce the "funky graph" - a graph on 12 vertices with an induced 7 cycle -/
 def funkyGraph  : SimpleGraph (ZMod 12) :=
   SimpleGraph.fromRel (λ x y =>
-   ((x.val<7 ∧ y.val<7) ∧ x-y=1) ∨
-  (x=0 ∧ y = 6) -- edge to finish of cycle
+   ((x.val<7 ∧ y.val<7) ∧ x-y=1) ∨ --Edges between any of the first 7 vertices that are 1 apart
+  (x=0 ∧ y = 6) --Edge to finish off cycle
   ∨ (x=0 ∧ y=9)
   ∨ (x=2 ∧ y=11)
   ∨ (x=4 ∧ y=9)
@@ -941,18 +947,15 @@ def funkyGraph  : SimpleGraph (ZMod 12) :=
 
 
 
-
-lemma  adjacenciesforc7infunckygraph (u v : ZMod 12) (h: v-u=1∧ u.val <7∧ v.val<7 ): funkyGraph.Adj u v := by
+--Any of the first 7 vertices in the funky graph are adjacent to each other if they are one apart
+lemma  adjacenciesforc7infunkygraph (u v : ZMod 12) (h: v-u=1∧ u.val <7∧ v.val<7 ): funkyGraph.Adj u v := by
   unfold funkyGraph
   have h' := zmod12nontrivial
   simp_all only [fromRel_adj, ne_eq, and_self, true_and, true_or, or_true, and_true]
   intro a
   simp_all only [sub_self, zero_ne_one]
 
-
-
-
-
+--The edge [0,6] exists in the funky graph
 lemma sixconnectedtozero : funkyGraph.Adj 6 0 := by
   unfold funkyGraph
   simp_all only [fromRel_adj, ne_eq, and_self, true_and, true_or, or_true, and_true]
@@ -960,21 +963,20 @@ lemma sixconnectedtozero : funkyGraph.Adj 6 0 := by
   symm
   apply (zero_ne_a_  6 (by exact lessthan12greaterthanzero (by trivial)))
 
-
-
+--There is a walk from 0 to 6 (not the edge [0,6]) in the funky graph
+--Requires specification that the vertices are distinct mod 12
 def funkyGraphc7Walk : funkyGraph.Walk 0 0  :=
-  (adjacenciesforc7infunckygraph 0 1 (uminusvandlessthan7 (by trivial))).toWalk.append
-  ((adjacenciesforc7infunckygraph 1 2 (uminusvandlessthan7 (by trivial))).toWalk.append
-  ((adjacenciesforc7infunckygraph 2 3 (uminusvandlessthan7 (by trivial))).toWalk.append
-  ((adjacenciesforc7infunckygraph 3 4 (uminusvandlessthan7 (by trivial))).toWalk.append
-  ((adjacenciesforc7infunckygraph 4 5 (uminusvandlessthan7 (by trivial))).toWalk.append
-  ((adjacenciesforc7infunckygraph 5 6 (uminusvandlessthan7 (by trivial))).toWalk.append
+  (adjacenciesforc7infunkygraph 0 1 (uminusvandlessthan7 (by trivial))).toWalk.append
+  ((adjacenciesforc7infunkygraph 1 2 (uminusvandlessthan7 (by trivial))).toWalk.append
+  ((adjacenciesforc7infunkygraph 2 3 (uminusvandlessthan7 (by trivial))).toWalk.append
+  ((adjacenciesforc7infunkygraph 3 4 (uminusvandlessthan7 (by trivial))).toWalk.append
+  ((adjacenciesforc7infunkygraph 4 5 (uminusvandlessthan7 (by trivial))).toWalk.append
+  ((adjacenciesforc7infunkygraph 5 6 (uminusvandlessthan7 (by trivial))).toWalk.append
   (sixconnectedtozero.toWalk))))))
 
-
+--The walk is a trail
 lemma funkyGraphWalkisTrail : funkyGraphc7Walk.IsTrail := by
   have h' := zmod12nontrivial
-
   unfold funkyGraphc7Walk
   simp only [Walk.cons_append, Walk.nil_append, Walk.cons_isTrail_iff, Walk.IsTrail.nil,
     Walk.edges_nil, List.not_mem_nil, not_false_eq_true, and_self, Walk.edges_cons,
@@ -984,7 +986,8 @@ lemma funkyGraphWalkisTrail : funkyGraphc7Walk.IsTrail := by
   norm_cast
 
 
-
+/-This lemma checks that vertices are not visited more than once in the walk (except maybe the start and end vertex of the cycle)
+To do so it must check that there are no equivalences in the vertices mod 12 -/
 lemma funkyGraphWalktailnodup  : funkyGraphc7Walk.support.tail.Nodup := by
   unfold funkyGraphc7Walk
   simp only [Walk.cons_append, Walk.nil_append, Walk.support_cons, Walk.support_nil, List.tail_cons,
@@ -992,14 +995,12 @@ lemma funkyGraphWalktailnodup  : funkyGraphc7Walk.support.tail.Nodup := by
     List.nodup_nil, and_self, and_true]
   norm_cast
 
-
-
+--Show our cycle 7 is not "nil" i.e. not a walk from a vertex to itself
 lemma funkyGraphWalkisnotNil : funkyGraphc7Walk ≠ SimpleGraph.Walk.nil := by
   unfold funkyGraphc7Walk
   simp_all only [SimpleGraph.Walk.cons_append, SimpleGraph.Walk.nil_append, ne_eq, not_false_eq_true]
 
--- lemma funkyGraphWalktailnodup
-
+--Combine previous lemmas to show the 7 cycle is in fact a cycle
 lemma  funkyGraphWalkIsCycle : funkyGraphc7Walk.IsCycle := by
   rw [isCycle_def]
   constructor
@@ -1007,16 +1008,13 @@ lemma  funkyGraphWalkIsCycle : funkyGraphc7Walk.IsCycle := by
   constructor
   apply funkyGraphWalkisnotNil
   apply funkyGraphWalktailnodup
-
   done
 
-
+--The length of the 7 cycle is 7
 lemma funkyGraphWalkLength7 : funkyGraphc7Walk.length=7 := by
   apply Eq.refl (SimpleGraph.Walk.length funkyGraphc7Walk)
 
-
-
-
+--Show that funky graph has a 7 cycle
 theorem funkyGraphhasc7 : hasNCycle funkyGraph 7  := by
   unfold hasNCycle
   use 0
@@ -1027,12 +1025,13 @@ theorem funkyGraphhasc7 : hasNCycle funkyGraph 7  := by
   { apply funkyGraphWalkLength7
   }
 
+--Show that funky graph has an odd hole
 theorem funkyGraphhasOddhole : hasOddHole funkyGraph := by
   unfold hasOddHole
   use 1
   exact funkyGraphhasc7
 
-
+--Use the Strong Perfect Graph Theorem to show funky graph isn't perfect
 theorem funkyGraphnotPerfect : ¬ isPerfect funkyGraph := by
   rw [strongPerfectGraphTheorem]
   simp only [not_and_or]
@@ -1040,5 +1039,8 @@ theorem funkyGraphnotPerfect : ¬ isPerfect funkyGraph := by
   refine Or.inl ?h
   exact funkyGraphhasOddhole
 
+
+
+--------------------------------------------------------------------------
 
 end PerfectGraphs
